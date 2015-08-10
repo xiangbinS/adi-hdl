@@ -1,6 +1,6 @@
 // ***************************************************************************
 // ***************************************************************************
-// Copyright 2014 - 2017 (c) Analog Devices, Inc. All rights reserved.
+// Copyright 2014 - 2022 (c) Analog Devices, Inc. All rights reserved.
 //
 // In this HDL repository, there are many different and unique modules, consisting
 // of various HDL (Verilog or VHDL) components. The individual modules are
@@ -165,6 +165,26 @@ module axi_dmac #(
   input  [AXI_ID_WIDTH_SRC-1:0]            m_src_axi_rid,
   input                                    m_src_axi_rlast,
 
+  // Master AXI interface
+  input                                    m_sg_axi_aclk,
+  input                                    m_sg_axi_aresetn,
+
+  // Read address
+  input                                    m_sg_axi_arready,
+  output                                   m_sg_axi_arvalid,
+  output [DMA_AXI_ADDR_WIDTH-1:0]          m_sg_axi_araddr,
+  output [7-(4*DMA_AXI_PROTOCOL_SRC):0]    m_sg_axi_arlen,
+  output [ 2:0]                            m_sg_axi_arsize,
+  output [ 1:0]                            m_sg_axi_arburst,
+  output [ 2:0]                            m_sg_axi_arprot,
+  output [ 3:0]                            m_sg_axi_arcache,
+
+  // Read data and response
+  input  [DMA_DATA_WIDTH_SRC-1:0]          m_sg_axi_rdata,
+  output                                   m_sg_axi_rready,
+  input                                    m_sg_axi_rvalid,
+  input  [ 1:0]                            m_sg_axi_rresp,
+
   // Unused write interface
   output                                   m_src_axi_awvalid,
   output [DMA_AXI_ADDR_WIDTH-1:0]          m_src_axi_awaddr,
@@ -257,6 +277,7 @@ module axi_dmac #(
     DMA_DATA_WIDTH_SRC > 32 ? 3 :
     DMA_DATA_WIDTH_SRC > 16 ? 2 :
     DMA_DATA_WIDTH_SRC > 8 ? 1 : 0;
+  localparam BYTES_PER_BEAT_WIDTH_SG = BYTES_PER_BEAT_WIDTH_SRC;
   localparam ID_WIDTH = (FIFO_SIZE) > 64 ? 8 :
     (FIFO_SIZE) > 32 ? 7 :
     (FIFO_SIZE) > 16 ? 6 :
@@ -358,6 +379,7 @@ module axi_dmac #(
   assign m_src_axi_arlock = 'h0;
 
   wire up_req_eot;
+  wire [31:0] up_req_sg_desc_id;
   wire [BYTES_PER_BURST_WIDTH-1:0] up_req_measured_burst_length;
   wire up_response_partial;
   wire up_response_valid;
@@ -365,11 +387,13 @@ module axi_dmac #(
 
   wire ctrl_enable;
   wire ctrl_pause;
+  wire ctrl_hwdesc;
 
   wire up_dma_req_valid;
   wire up_dma_req_ready;
   wire [DMA_AXI_ADDR_WIDTH-1:BYTES_PER_BEAT_WIDTH_DEST] up_dma_req_dest_address;
   wire [DMA_AXI_ADDR_WIDTH-1:BYTES_PER_BEAT_WIDTH_SRC] up_dma_req_src_address;
+  wire [DMA_AXI_ADDR_WIDTH-1:BYTES_PER_BEAT_WIDTH_SG] up_dma_req_sg_address;
   wire [DMA_LENGTH_WIDTH-1:0] up_dma_req_x_length;
   wire [DMA_LENGTH_WIDTH-1:0] up_dma_req_y_length;
   wire [DMA_LENGTH_WIDTH-1:0] up_dma_req_dest_stride;
@@ -396,6 +420,7 @@ module axi_dmac #(
     .DISABLE_DEBUG_REGISTERS(DISABLE_DEBUG_REGISTERS),
     .BYTES_PER_BEAT_WIDTH_DEST(BYTES_PER_BEAT_WIDTH_DEST),
     .BYTES_PER_BEAT_WIDTH_SRC(BYTES_PER_BEAT_WIDTH_SRC),
+    .BYTES_PER_BEAT_WIDTH_SG(BYTES_PER_BEAT_WIDTH_SG),
     .BYTES_PER_BURST_WIDTH(BYTES_PER_BURST_WIDTH),
     .DMA_TYPE_DEST(DMA_TYPE_DEST),
     .DMA_TYPE_SRC(DMA_TYPE_SRC),
@@ -438,12 +463,14 @@ module axi_dmac #(
      // Control interface
     .ctrl_enable(ctrl_enable),
     .ctrl_pause(ctrl_pause),
+    .ctrl_hwdesc(ctrl_hwdesc),
 
      // Request interface
     .request_valid(up_dma_req_valid),
     .request_ready(up_dma_req_ready),
     .request_dest_address(up_dma_req_dest_address),
     .request_src_address(up_dma_req_src_address),
+    .request_sg_address(up_dma_req_sg_address),
     .request_x_length(up_dma_req_x_length),
     .request_y_length(up_dma_req_y_length),
     .request_dest_stride(up_dma_req_dest_stride),
@@ -453,6 +480,7 @@ module axi_dmac #(
 
     // DMA response interface
     .response_eot(up_req_eot),
+    .response_sg_desc_id(up_req_sg_desc_id),
     .response_measured_burst_length(up_req_measured_burst_length),
     .response_partial(up_response_partial),
     .response_valid(up_response_valid),
@@ -472,6 +500,7 @@ module axi_dmac #(
     .DMA_LENGTH_ALIGN(DMA_LENGTH_ALIGN),
     .BYTES_PER_BEAT_WIDTH_DEST(BYTES_PER_BEAT_WIDTH_DEST),
     .BYTES_PER_BEAT_WIDTH_SRC(BYTES_PER_BEAT_WIDTH_SRC),
+    .BYTES_PER_BEAT_WIDTH_SG(BYTES_PER_BEAT_WIDTH_SG),
     .BYTES_PER_BURST_WIDTH(BYTES_PER_BURST_WIDTH),
     .DMA_TYPE_DEST(DMA_TYPE_DEST),
     .DMA_TYPE_SRC(DMA_TYPE_SRC),
@@ -496,11 +525,13 @@ module axi_dmac #(
 
     .ctrl_enable(ctrl_enable),
     .ctrl_pause(ctrl_pause),
+    .ctrl_hwdesc(ctrl_hwdesc),
 
     .req_valid(up_dma_req_valid),
     .req_ready(up_dma_req_ready),
     .req_dest_address(up_dma_req_dest_address),
     .req_src_address(up_dma_req_src_address),
+    .req_sg_address(up_dma_req_sg_address),
     .req_x_length(up_dma_req_x_length),
     .req_y_length(up_dma_req_y_length),
     .req_dest_stride(up_dma_req_dest_stride),
@@ -509,6 +540,7 @@ module axi_dmac #(
     .req_last(up_dma_req_last),
 
     .req_eot(up_req_eot),
+    .req_sg_desc_id(up_req_sg_desc_id),
     .req_measured_burst_length(up_req_measured_burst_length),
     .req_response_partial(up_response_partial),
     .req_response_valid(up_response_valid),
@@ -518,6 +550,8 @@ module axi_dmac #(
     .m_dest_axi_aresetn(m_dest_axi_aresetn),
     .m_src_axi_aclk(m_src_axi_aclk),
     .m_src_axi_aresetn(m_src_axi_aresetn),
+    .m_sg_axi_aclk(m_sg_axi_aclk),
+    .m_sg_axi_aresetn(m_sg_axi_aresetn),
 
     .m_axi_awaddr(m_dest_axi_awaddr),
     .m_axi_awlen(m_dest_axi_awlen),
@@ -552,6 +586,20 @@ module axi_dmac #(
     .m_axi_rvalid(m_src_axi_rvalid),
     .m_axi_rlast(m_src_axi_rlast),
     .m_axi_rresp(m_src_axi_rresp),
+
+    .m_sg_axi_arready(m_sg_axi_arready),
+    .m_sg_axi_arvalid(m_sg_axi_arvalid),
+    .m_sg_axi_araddr(m_sg_axi_araddr),
+    .m_sg_axi_arlen(m_sg_axi_arlen),
+    .m_sg_axi_arsize(m_sg_axi_arsize),
+    .m_sg_axi_arburst(m_sg_axi_arburst),
+    .m_sg_axi_arprot(m_sg_axi_arprot),
+    .m_sg_axi_arcache(m_sg_axi_arcache),
+
+    .m_sg_axi_rdata(m_sg_axi_rdata),
+    .m_sg_axi_rready(m_sg_axi_rready),
+    .m_sg_axi_rvalid(m_sg_axi_rvalid),
+    .m_sg_axi_rresp(m_sg_axi_rresp),
 
     .s_axis_aclk(s_axis_aclk),
     .s_axis_ready(s_axis_ready),

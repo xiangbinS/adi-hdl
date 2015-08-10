@@ -38,6 +38,7 @@ ad_ip_files axi_dmac [list \
   response_handler.v \
   axi_register_slice.v \
   dmac_2d_transfer.v \
+  dmac_sg.v \
   dest_axi_mm.v \
   dest_axi_stream.v \
   dest_fifo_inf.v \

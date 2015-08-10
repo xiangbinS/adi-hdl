@@ -24,6 +24,7 @@ GENERIC_DEPS += dest_axi_mm.v
 GENERIC_DEPS += dest_axi_stream.v
 GENERIC_DEPS += dest_fifo_inf.v
 GENERIC_DEPS += dmac_2d_transfer.v
+GENERIC_DEPS += dmac_sg.v
 GENERIC_DEPS += inc_id.vh
 GENERIC_DEPS += request_arb.v
 GENERIC_DEPS += request_generator.v

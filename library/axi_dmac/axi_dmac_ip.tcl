@@ -26,6 +26,7 @@ adi_ip_files axi_dmac [list \
   "response_handler.v" \
   "axi_register_slice.v" \
   "dmac_2d_transfer.v" \
+  "dmac_sg.v" \
   "dest_axi_mm.v" \
   "dest_axi_stream.v" \
   "dest_fifo_inf.v" \
@@ -87,6 +88,8 @@ adi_set_bus_dependency "m_src_axi" "m_src_axi" \
 	"(spirit:decode(id('MODELPARAM_VALUE.DMA_TYPE_SRC')) = 0)"
 adi_set_bus_dependency "m_dest_axi" "m_dest_axi" \
 	"(spirit:decode(id('MODELPARAM_VALUE.DMA_TYPE_DEST')) = 0)"
+adi_set_bus_dependency "m_sg_axi" "m_sg_axi" \
+	"(spirit:decode(id('MODELPARAM_VALUE.DMA_2D_TRANSFER')) = 1)"
 adi_set_bus_dependency "s_axis" "s_axis" \
 	"(spirit:decode(id('MODELPARAM_VALUE.DMA_TYPE_SRC')) = 1)"
 adi_set_bus_dependency "m_axis" "m_axis" \
@@ -162,6 +165,9 @@ set_property master_address_space_ref m_dest_axi \
 set_property master_address_space_ref m_src_axi \
     [ipx::get_bus_interfaces m_src_axi \
     -of_objects [ipx::current_core]]
+set_property master_address_space_ref m_sg_axi \
+    [ipx::get_bus_interfaces m_sg_axi \
+    -of_objects [ipx::current_core]]
 
 adi_add_bus "fifo_wr" "slave" \
 	"analog.com:interface:fifo_wr_rtl:1.0" \
@@ -194,7 +200,7 @@ adi_add_bus_clock "fifo_rd_clk" "fifo_rd"
 adi_set_bus_dependency "fifo_rd" "fifo_rd" \
 	"(spirit:decode(id('MODELPARAM_VALUE.DMA_TYPE_DEST')) = 2)"
 
-foreach port {"m_dest_axi_aresetn" "m_src_axi_aresetn" \
+foreach port {"m_dest_axi_aresetn" "m_src_axi_aresetn" "m_sg_axi_aresetn" \
   "s_axis_valid" "s_axis_data" "s_axis_last" "m_axis_ready" \
   "fifo_wr_en" "fifo_wr_din" "fifo_rd_en"} {
 	set_property DRIVER_VALUE "0" [ipx::get_ports $port]
