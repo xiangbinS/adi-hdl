@@ -81,6 +81,7 @@ module axi_dmac_regmap_request #(
   output [DMA_LENGTH_WIDTH-1:0] request_src_stride,
   output request_sync_transfer_start,
   output request_last,
+  input request_arb_enable,
 
   // DMA response interface
   input response_eot,
@@ -185,7 +186,7 @@ module axi_dmac_regmap_request #(
     case (up_raddr)
     9'h101: up_rdata <= up_transfer_id;
     9'h102: up_rdata <= up_dma_req_valid;
-    9'h103: up_rdata <= {29'h00, up_dma_enable_tlen_reporting, up_dma_last, up_dma_cyclic}; // Flags
+    9'h103: up_rdata <= {28'h00, request_arb_enable, up_dma_enable_tlen_reporting, up_dma_last, up_dma_cyclic}; // Flags
     9'h104: up_rdata <= HAS_DEST_ADDR ? {up_dma_dest_address[ADDR_LOW_MSB:BYTES_PER_BEAT_WIDTH_DEST],{BYTES_PER_BEAT_WIDTH_DEST{1'b0}}} : 'h00;
     9'h105: up_rdata <= HAS_SRC_ADDR ? {up_dma_src_address[ADDR_LOW_MSB:BYTES_PER_BEAT_WIDTH_SRC],{BYTES_PER_BEAT_WIDTH_SRC{1'b0}}} : 'h00;
     9'h106: up_rdata <= up_dma_x_length;

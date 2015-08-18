@@ -103,6 +103,7 @@ module axi_dmac_regmap #(
   output [DMA_LENGTH_WIDTH-1:0] request_src_stride,
   output request_sync_transfer_start,
   output request_last,
+  input request_arb_enable,
 
   // DMA response interface
   input response_eot,
@@ -273,6 +274,7 @@ module axi_dmac_regmap #(
     .request_src_stride(request_src_stride),
     .request_sync_transfer_start(request_sync_transfer_start),
     .request_last(request_last),
+    .request_arb_enable(request_arb_enable),
 
     .response_eot(response_eot),
     .response_sg_desc_id(response_sg_desc_id),

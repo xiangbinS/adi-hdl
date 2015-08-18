@@ -400,6 +400,7 @@ module axi_dmac #(
   wire [DMA_LENGTH_WIDTH-1:0] up_dma_req_src_stride;
   wire up_dma_req_sync_transfer_start;
   wire up_dma_req_last;
+  wire up_req_arb_enable;
 
   assign dbg_ids0 = {
     {DBG_ID_PADDING{1'b0}}, dest_response_id,
@@ -477,6 +478,7 @@ module axi_dmac #(
     .request_src_stride(up_dma_req_src_stride),
     .request_sync_transfer_start(up_dma_req_sync_transfer_start),
     .request_last(up_dma_req_last),
+    .request_arb_enable(up_req_arb_enable),
 
     // DMA response interface
     .response_eot(up_req_eot),
@@ -538,6 +540,7 @@ module axi_dmac #(
     .req_src_stride(up_dma_req_src_stride),
     .req_sync_transfer_start(up_dma_req_sync_transfer_start),
     .req_last(up_dma_req_last),
+    .req_arb_enable(up_req_arb_enable),
 
     .req_eot(up_req_eot),
     .req_sg_desc_id(up_req_sg_desc_id),
