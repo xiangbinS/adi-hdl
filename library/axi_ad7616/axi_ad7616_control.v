@@ -1,6 +1,6 @@
 // ***************************************************************************
 // ***************************************************************************
-// Copyright 2014 - 2017 (c) Analog Devices, Inc. All rights reserved.
+// Copyright 2014 - 2021 (c) Analog Devices, Inc. All rights reserved.
 //
 // In this HDL repository, there are many different and unique modules, consisting
 // of various HDL (Verilog or VHDL) components. The individual modules are
@@ -37,8 +37,7 @@
 
 module axi_ad7616_control #(
 
-  parameter   ID = 0,
-  parameter   IF_TYPE = 0) (
+  parameter   ID = 0) (
 
   // control signals
 
@@ -72,8 +71,6 @@ module axi_ad7616_control #(
   localparam  PCORE_VERSION = 'h00001002;
   localparam  POS_EDGE = 0;
   localparam  NEG_EDGE = 1;
-  localparam  SERIAL = 0;
-  localparam  PARALLEL = 1;
 
   // internal signals
 
@@ -96,8 +93,8 @@ module axi_ad7616_control #(
 
   // the up_[read/write]_data interfaces are valid just in parallel mode
 
-  assign up_read_valid_s = (IF_TYPE == PARALLEL) ? up_read_valid : 1'b1;
-  assign up_read_data_s = (IF_TYPE == PARALLEL) ? {16'h0, up_read_data} : {2{16'hDEAD}};
+  assign up_read_valid_s = up_read_valid;
+  assign up_read_data_s = {16'h0, up_read_data};
 
   // processor write interface
 
@@ -149,7 +146,7 @@ module axi_ad7616_control #(
           9'h100 : up_rdata <= PCORE_VERSION;
           9'h101 : up_rdata <= ID;
           9'h102 : up_rdata <= up_scratch;
-          9'h103 : up_rdata <= IF_TYPE;
+/*           9'h103 : up_rdata <= IF_TYPE; */
           9'h110 : up_rdata <= {29'b0, up_cnvst_en, up_resetn};
           9'h111 : up_rdata <= up_conv_rate;
           9'h112 : up_rdata <= {27'b0, up_burst_length};
@@ -173,8 +170,8 @@ module axi_ad7616_control #(
     .signal_out (end_of_conv)
   );
 
-  // convertion start generator
-  // NOTE: + The minimum convertion cycle is 1 us
+  // conversion start generator
+  // NOTE: + The minimum conversion cycle is 1 us
   //       + The rate of the cnvst must be defined in a way,
   //          to not lose any data. cnvst_rate >= t_conversion + t_aquisition
   //  See the AD7616 datasheet for more information.
