@@ -50,8 +50,9 @@ module axi_ad7616 #(
 
   // physical control interface
 
-  output                  rx_cnvst,
-  input                   rx_busy,
+//  output                  rx_cnvst,
+//  input                   rx_busy,
+  input                   rx_trigger,
 
   // AXI Slave Memory Map
 
@@ -154,7 +155,7 @@ module axi_ad7616 #(
     .adc_data (adc_data),
     .adc_valid (adc_valid),
     .adc_sync (adc_sync),
-    .end_of_conv (trigger_s),
+    .end_of_conv (rx_trigger),
     .burst_length(burst_length_s),
     .clk (up_clk),
     .rstn (up_rstn),
@@ -169,15 +170,15 @@ module axi_ad7616 #(
   axi_ad7616_control #(
     .ID(ID)
   ) i_ad7616_control (
-    .cnvst (rx_cnvst),
-    .busy (rx_busy),
+//    .cnvst (rx_cnvst),
+//    .busy (rx_busy),
     .up_burst_length (burst_length_s),
     .up_read_data (rd_data_s),
     .up_read_valid (rd_valid_s),
     .up_write_data (wr_data_s),
     .up_read_req (rd_req_s),
     .up_write_req (wr_req_s),
-    .end_of_conv (trigger_s),
+//    .end_of_conv (trigger_s),
     .up_rstn (up_rstn),
     .up_clk (up_clk),
     .up_wreq (up_wreq_s),

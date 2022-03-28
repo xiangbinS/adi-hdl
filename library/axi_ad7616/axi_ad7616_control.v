@@ -41,8 +41,8 @@ module axi_ad7616_control #(
 
   // control signals
 
-  output                  cnvst,
-  input                   busy,
+//  output                  cnvst,
+//  input                   busy,
 
   input       [15:0]      up_read_data,
   input                   up_read_valid,
@@ -161,14 +161,14 @@ module axi_ad7616_control #(
 
   assign up_rst = ~up_rstn;
 
-  ad_edge_detect #(
+/*   ad_edge_detect #(
     .EDGE(NEG_EDGE)
   ) i_ad_edge_detect (
     .clk (up_clk),
     .rst (up_rst),
     .signal_in (busy),
     .signal_out (end_of_conv)
-  );
+  ); */
 
   // conversion start generator
   // NOTE: + The minimum conversion cycle is 1 us
@@ -176,7 +176,7 @@ module axi_ad7616_control #(
   //          to not lose any data. cnvst_rate >= t_conversion + t_aquisition
   //  See the AD7616 datasheet for more information.
 
-  always @(posedge up_clk) begin
+/*   always @(posedge up_clk) begin
     if(up_resetn == 1'b0) begin
       cnvst_counter <= 32'b0;
     end else begin
@@ -200,9 +200,9 @@ module axi_ad7616_control #(
         cnvst_buf <= 1'b0;
       end
     end
-  end
+  end */
 
-  assign cnvst = (up_cnvst_en == 1'b1) ? cnvst_buf : 1'b0;
+//  assign cnvst = (up_cnvst_en == 1'b1) ? cnvst_buf : 1'b0;
 
 endmodule
 
