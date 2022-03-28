@@ -37,6 +37,7 @@ if {$SI_OR_PI == 0} {
   spi_engine_create $hier_spi_engine $data_width $async_spi_clk $num_cs $num_sdi $sdi_delay
 
   ad_ip_instance axi_pwm_gen ad7616_pwm_gen
+  ad_ip_parameter ad7616_pwm_gen CONFIG.ASYNC_CLK_EN 0
   ad_ip_parameter ad7616_pwm_gen CONFIG.PULSE_0_PERIOD 100
   ad_ip_parameter ad7616_pwm_gen CONFIG.PULSE_0_WIDTH 5
 
@@ -86,7 +87,7 @@ if {$SI_OR_PI == 0} {
   ad_connect  $hier_spi_engine/m_spi ad7616_spi
 
   ad_connect  ad7616_pwm_gen/pwm_0 rx_cnvst
-  ad_connect  sys_cpu_clk ad7616_pwm_gen/ext_clk
+#  ad_connect  sys_cpu_clk ad7616_pwm_gen/ext_clk
   ad_connect  $sys_cpu_clk ad7616_pwm_gen/s_axi_aclk
   ad_connect  sys_cpu_resetn ad7616_pwm_gen/s_axi_aresetn
 
