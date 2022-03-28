@@ -22,6 +22,23 @@ create_bd_port -dir I rx_busy
 
 # instantiation
 
+ad_ip_instance axi_pwm_gen ad7616_pwm_gen
+ad_ip_parameter ad7616_pwm_gen CONFIG.ASYNC_CLK_EN 0
+ad_ip_parameter ad7616_pwm_gen CONFIG.PULSE_0_PERIOD 100
+ad_ip_parameter ad7616_pwm_gen CONFIG.PULSE_0_WIDTH 5
+
+# trigger to BUSY's negative edge
+
+create_bd_cell -type module -reference sync_bits busy_sync
+create_bd_cell -type module -reference ad_edge_detect busy_capture
+set_property -dict [list CONFIG.EDGE 1] [get_bd_cells busy_capture]
+
+ad_connect sys_cpu_clk busy_capture/clk
+ad_connect busy_capture/rst GND
+ad_connect sys_cpu_clk busy_sync/out_clk
+ad_connect busy_sync/in_bits rx_busy
+ad_connect busy_sync/out_bits busy_capture/signal_in
+
 if {$SI_OR_PI == 0} {
   create_bd_intf_port -mode Master -vlnv analog.com:interface:spi_master_rtl:1.0 ad7616_spi
 
@@ -36,28 +53,16 @@ if {$SI_OR_PI == 0} {
 
   spi_engine_create $hier_spi_engine $data_width $async_spi_clk $num_cs $num_sdi $sdi_delay
 
-  ad_ip_instance axi_pwm_gen ad7616_pwm_gen
-  ad_ip_parameter ad7616_pwm_gen CONFIG.ASYNC_CLK_EN 0
-  ad_ip_parameter ad7616_pwm_gen CONFIG.PULSE_0_PERIOD 100
-  ad_ip_parameter ad7616_pwm_gen CONFIG.PULSE_0_WIDTH 5
-
-  # trigger to BUSY's negative edge
-
-  create_bd_cell -type module -reference sync_bits busy_sync
-  create_bd_cell -type module -reference ad_edge_detect busy_capture
-  set_property -dict [list CONFIG.EDGE 1] [get_bd_cells busy_capture]
-
-  ad_connect sys_cpu_clk busy_capture/clk
-  ad_connect busy_capture/rst GND
   ad_connect busy_sync/out_resetn $hier_spi_engine/axi_regmap/spi_resetn
-  ad_connect sys_cpu_clk busy_sync/out_clk
-  ad_connect busy_sync/in_bits rx_busy
-  ad_connect busy_sync/out_bits busy_capture/signal_in
   ad_connect busy_capture/signal_out $hier_spi_engine/offload/trigger
 
 } else {
   ad_ip_instance axi_ad7616 axi_ad7616
+  
+  ad_connect busy_capture/signal_out axi_ad7616/rx_trigger
 }
+
+# dma
 
 ad_ip_instance axi_dmac axi_ad7616_dma
 ad_ip_parameter axi_ad7616_dma CONFIG.DMA_TYPE_DEST 0
@@ -79,17 +84,16 @@ if {$SI_OR_PI == 0} {
 
 # interface connections
 
+ad_connect  ad7616_pwm_gen/pwm_0 rx_cnvst
+ad_connect  $sys_cpu_clk ad7616_pwm_gen/s_axi_aclk
+ad_connect  sys_cpu_resetn ad7616_pwm_gen/s_axi_aresetn
+
 if {$SI_OR_PI == 0} {
 
   ad_connect  sys_cpu_clk $hier_spi_engine/clk
   ad_connect  sys_cpu_resetn $hier_spi_engine/resetn
   ad_connect  sys_cpu_clk $hier_spi_engine/spi_clk
   ad_connect  $hier_spi_engine/m_spi ad7616_spi
-
-  ad_connect  ad7616_pwm_gen/pwm_0 rx_cnvst
-#  ad_connect  sys_cpu_clk ad7616_pwm_gen/ext_clk
-  ad_connect  $sys_cpu_clk ad7616_pwm_gen/s_axi_aclk
-  ad_connect  sys_cpu_resetn ad7616_pwm_gen/s_axi_aresetn
 
   ad_connect  sys_cpu_clk axi_ad7616_dma/s_axis_aclk
   ad_connect  axi_ad7616_dma/s_axis $hier_spi_engine/m_axis_sample
@@ -103,8 +107,8 @@ if {$SI_OR_PI == 0} {
   ad_connect  rx_wr_n axi_ad7616/rx_wr_n
 
   ad_connect  rx_cs_n axi_ad7616/rx_cs_n
-  ad_connect  rx_cnvst axi_ad7616/rx_cnvst
-  ad_connect  rx_busy axi_ad7616/rx_busy
+#  ad_connect  rx_cnvst axi_ad7616/rx_cnvst
+#  ad_connect  rx_busy axi_ad7616/rx_busy
 
   ad_connect  sys_cpu_clk axi_ad7616_dma/fifo_wr_clk
   ad_connect  axi_ad7616/adc_valid axi_ad7616_dma/fifo_wr_en
