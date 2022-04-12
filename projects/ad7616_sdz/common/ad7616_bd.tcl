@@ -121,11 +121,11 @@ ad_connect sys_cpu_resetn axi_ad7616_dma/m_dest_axi_aresetn
 # interconnect
 
 ad_cpu_interconnect  0x44A30000 axi_ad7616_dma
-ad_cpu_interconnect  0x44b00000 ad7616_pwm_gen
+ad_cpu_interconnect  0x44B00000 ad7616_pwm_gen
 if {$SI_OR_PI == 0} {
-  ad_cpu_interconnect  0x44A80000 $hier_spi_engine/axi_regmap
+  ad_cpu_interconnect  0x44A00000 $hier_spi_engine/axi_regmap
 } else {
-  ad_cpu_interconnect  0x44A00000 axi_ad7616
+  ad_cpu_interconnect  0x44A80000 axi_ad7616
 }
 
 # memory interconnect
