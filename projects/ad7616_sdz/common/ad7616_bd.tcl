@@ -44,7 +44,7 @@ if {$SI_OR_PI == 0} {
 
   source $ad_hdl_dir/library/spi_engine/scripts/spi_engine.tcl
 
-  set data_width    32
+  set data_width    16
   set async_spi_clk 1
   set num_cs        1
   set num_sdi       2
@@ -71,14 +71,14 @@ ad_ip_parameter axi_ad7616_dma CONFIG.DMA_2D_TRANSFER 0
 ad_ip_parameter axi_ad7616_dma CONFIG.DMA_DATA_WIDTH_DEST 64
 
 if {$SI_OR_PI == 0} {
+  ad_ip_parameter axi_ad7616_dma CONFIG.DMA_DATA_WIDTH_SRC 32
   ad_ip_parameter axi_ad7616_dma CONFIG.DMA_TYPE_SRC 1
-  ad_ip_parameter axi_ad7616_dma CONFIG.DMA_DATA_WIDTH_SRC $data_width
   ad_ip_parameter axi_ad7616_dma CONFIG.SYNC_TRANSFER_START 0
   ad_ip_parameter axi_ad7616_dma CONFIG.AXI_SLICE_SRC 0
   ad_ip_parameter axi_ad7616_dma CONFIG.AXI_SLICE_DEST 1
 } else {
-  ad_ip_parameter axi_ad7616_dma CONFIG.DMA_TYPE_SRC 2
   ad_ip_parameter axi_ad7616_dma CONFIG.DMA_DATA_WIDTH_SRC 16
+  ad_ip_parameter axi_ad7616_dma CONFIG.DMA_TYPE_SRC 2
 }
 
 
