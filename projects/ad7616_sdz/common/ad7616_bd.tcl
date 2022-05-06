@@ -45,7 +45,7 @@ if {$SI_OR_PI == 0} {
   source $ad_hdl_dir/library/spi_engine/scripts/spi_engine.tcl
 
   set data_width    16
-  set async_spi_clk 1
+  set async_spi_clk 0
   set num_cs        1
   set num_sdi       2
   set sdi_delay     1
@@ -92,7 +92,6 @@ if {$SI_OR_PI == 0} {
 
   ad_connect  sys_cpu_clk $hier_spi_engine/clk
   ad_connect  sys_cpu_resetn $hier_spi_engine/resetn
-  ad_connect  sys_cpu_clk $hier_spi_engine/spi_clk
   ad_connect  $hier_spi_engine/m_spi ad7616_spi
 
   ad_connect  sys_cpu_clk axi_ad7616_dma/s_axis_aclk
