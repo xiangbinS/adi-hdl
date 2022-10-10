@@ -85,16 +85,16 @@ module system_top (
 
   // cn0561 SPI configuration interface
 
-  input           cn0561_spi_sdi,
-  output          cn0561_spi_sdo,
-  output          cn0561_spi_sclk,
+  (* mark_debug = "true" *) input           cn0561_spi_sdi,
+  (* mark_debug = "true" *) output          cn0561_spi_sdo,
+  (* mark_debug = "true" *) output          cn0561_spi_sclk,
   output          cn0561_spi_cs,
 
   // cn0561 data interface
 
-  output          cn0561_dclk,
-  input   [ 3:0]  cn0561_din,
-  output          cn0561_odr,
+  (* mark_debug = "true" *) output          cn0561_dclk,
+  (* mark_debug = "true" *) input   [ 3:0]  cn0561_din,
+  (* mark_debug = "true" *) output          cn0561_odr,
 
   // cn0561 GPIO lines
 
@@ -113,9 +113,9 @@ module system_top (
 
   // internal signals
 
-  wire    [63:0]  gpio_i;
-  wire    [63:0]  gpio_o;
-  wire    [63:0]  gpio_t;
+  (* mark_debug = "true" *) wire    [63:0]  gpio_i;
+  (* mark_debug = "true" *) wire    [63:0]  gpio_o;
+  (* mark_debug = "true" *) wire    [63:0]  gpio_t;
   wire    [ 1:0]  iic_mux_scl_i_s;
   wire    [ 1:0]  iic_mux_scl_o_s;
   wire            iic_mux_scl_t_s;

@@ -8,12 +8,14 @@ current_bd_instance /cn0561_spi
   create_bd_pin -dir I -type clk clk
   create_bd_pin -dir I -type clk spi_clk
   create_bd_pin -dir I -type rst resetn
-  create_bd_pin -dir I odr
+  create_bd_pin -dir I trigger
   create_bd_pin -dir O irq
   create_bd_intf_pin -mode Master -vlnv analog.com:interface:spi_master_rtl:1.0 m_spi
   create_bd_intf_pin -mode Master -vlnv xilinx.com:interface:axis_rtl:1.0 M_AXIS_SAMPLE
 
-  if {$adc_resolution == 16 || $adc_resolution == 24} {
+  if {$adc_resolution == 16} {
+    set data_width 24
+  } elseif {$adc_resolution == 24} {
     set data_width 32
   } elseif {$adc_resolution == 32} {
     set data_width 64
@@ -88,25 +90,32 @@ ad_ip_parameter axi_cn0561_dma CONFIG.DMA_DATA_WIDTH_DEST 64
 # odr generator
 
 ad_ip_instance axi_pwm_gen odr_generator
-ad_ip_parameter odr_generator CONFIG.N_PWMS 1
-ad_ip_parameter odr_generator CONFIG.PULSE_0_PERIOD 10000
-ad_ip_parameter odr_generator CONFIG.PULSE_0_WIDTH 4
-ad_ip_parameter odr_generator CONFIG.ASYNC_CLK_EN 0
+ad_ip_parameter odr_generator CONFIG.N_PWMS 3
+ad_ip_parameter odr_generator CONFIG.PULSE_1_PERIOD 85
+ad_ip_parameter odr_generator CONFIG.PULSE_1_WIDTH 13
+#ad_ip_parameter odr_generator CONFIG.ASYNC_CLK_EN 0
+# offset no of clk cycles
+ad_ip_parameter odr_generator CONFIG.PULSE_1_OFFSET 3
+ad_ip_parameter odr_generator CONFIG.PULSE_2_PERIOD 85
+ad_ip_parameter odr_generator CONFIG.PULSE_2_WIDTH 1
 
-create_bd_cell -type module -reference sync_bits busy_sync
-create_bd_cell -type module -reference ad_edge_detect busy_capture
-set_property -dict [list CONFIG.EDGE 1] [get_bd_cells busy_capture]
+#create_bd_cell -type module -reference sync_bits busy_sync
+#create_bd_cell -type module -reference ad_edge_detect busy_capture
+#set_property -dict [list CONFIG.EDGE 1] [get_bd_cells busy_capture]
 
-ad_connect odr_generator/pwm_0 cn0561_odr
+ad_connect odr_generator/ext_clk axi_cn0561_clkgen/clk_0
+ad_connect odr_generator/pwm_1 cn0561_odr
+ad_connect odr_generator/pwm_2 cn0561_spi/trigger
+ad_connect cn0561_spi/trigger cn0561_spi/offload/trigger
 
-ad_connect axi_cn0561_clkgen/clk_0 busy_capture/clk
-ad_connect axi_cn0561_clkgen/clk_0 busy_sync/out_clk
-ad_connect busy_capture/rst GND
-ad_connect cn0561_spi/axi/spi_resetn busy_sync/out_resetn
+#ad_connect axi_cn0561_clkgen/clk_0 busy_capture/clk
+#ad_connect axi_cn0561_clkgen/clk_0 busy_sync/out_clk
+#ad_connect busy_capture/rst GND
+#ad_connect cn0561_spi/axi/spi_resetn busy_sync/out_resetn
 
-ad_connect cn0561_odr busy_sync/in_bits
-ad_connect busy_sync/out_bits busy_capture/signal_in
-ad_connect busy_capture/signal_out cn0561_spi/odr
+#ad_connect cn0561_odr busy_sync/in_bits
+#ad_connect busy_sync/out_bits busy_capture/signal_in
+#ad_connect busy_capture/signal_out cn0561_spi/odr
 
 ad_connect  axi_cn0561_clkgen/clk_0 cn0561_spi/spi_clk
 ad_connect  sys_cpu_clk axi_cn0561_clkgen/clk
@@ -128,4 +137,3 @@ ad_cpu_interrupt "ps-12" "mb-12" cn0561_spi/irq
 
 ad_mem_hp1_interconnect $sys_cpu_clk sys_ps7/S_AXI_HP1
 ad_mem_hp1_interconnect $sys_cpu_clk axi_cn0561_dma/m_dest_axi
-
