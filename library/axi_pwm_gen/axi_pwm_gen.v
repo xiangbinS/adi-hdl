@@ -82,8 +82,8 @@ module axi_pwm_gen #(
   input                   ext_sync,
 
   output                  pwm_0,
-  output                  pwm_1,
-  output                  pwm_2,
+  (* mark_debug = "true" *) output                  pwm_1,
+  (* mark_debug = "true" *) output                  pwm_2,
   output                  pwm_3
 );
 

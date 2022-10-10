@@ -59,19 +59,19 @@ module spi_engine_execution #(
   output reg sdo_data_ready,
   input [(DATA_WIDTH-1):0] sdo_data,
 
-  input sdi_data_ready,
-  output reg sdi_data_valid,
-  output [(NUM_OF_SDI * DATA_WIDTH)-1:0] sdi_data,
+ (* mark_debug = "true" *)  input sdi_data_ready,
+ (* mark_debug = "true" *)  output reg sdi_data_valid,
+ (* mark_debug = "true" *)  output [(NUM_OF_SDI * DATA_WIDTH)-1:0] sdi_data,
 
   input sync_ready,
   output reg sync_valid,
   output [7:0] sync,
 
   input echo_sclk,
-  output reg sclk,
+(* mark_debug = "true" *)  output reg sclk,
   output reg sdo,
   output reg sdo_t,
-  input [NUM_OF_SDI-1:0] sdi,
+(* mark_debug = "true" *)  input [NUM_OF_SDI-1:0] sdi,
   output reg [NUM_OF_CS-1:0] cs,
   output reg three_wire
 );

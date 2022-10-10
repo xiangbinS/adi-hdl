@@ -87,16 +87,16 @@ module axi_pwm_gen_regmap #(
 
   reg     [31:0]  up_scratch = 'd0;
   reg     [31:0]  up_pwm_width_0 = PULSE_0_WIDTH;
-  reg     [31:0]  up_pwm_width_1 = PULSE_1_WIDTH;
+  (* mark_debug = "true" *) reg     [31:0]  up_pwm_width_1 = PULSE_1_WIDTH;
   reg     [31:0]  up_pwm_width_2 = PULSE_2_WIDTH;
   reg     [31:0]  up_pwm_width_3 = PULSE_3_WIDTH;
   reg     [31:0]  up_pwm_period_0 = PULSE_0_PERIOD;
-  reg     [31:0]  up_pwm_period_1 = PULSE_1_PERIOD;
-  reg     [31:0]  up_pwm_period_2 = PULSE_2_PERIOD;
+  (* mark_debug = "true" *) reg     [31:0]  up_pwm_period_1 = PULSE_1_PERIOD;
+  (* mark_debug = "true" *) reg     [31:0]  up_pwm_period_2 = PULSE_2_PERIOD;
   reg     [31:0]  up_pwm_period_3 = PULSE_3_PERIOD;
   reg     [31:0]  up_pwm_offset_0 = PULSE_0_OFFSET;
-  reg     [31:0]  up_pwm_offset_1 = PULSE_1_OFFSET;
-  reg     [31:0]  up_pwm_offset_2 = PULSE_2_OFFSET;
+  (* mark_debug = "true" *) reg     [31:0]  up_pwm_offset_1 = PULSE_1_OFFSET;
+  (* mark_debug = "true" *) reg     [31:0]  up_pwm_offset_2 = PULSE_2_OFFSET;
   reg     [31:0]  up_pwm_offset_3 = PULSE_3_OFFSET;
   reg             up_load_config = 1'b0;
   reg             up_reset = 1'b1;
