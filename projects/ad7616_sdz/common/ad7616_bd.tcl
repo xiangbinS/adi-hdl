@@ -74,7 +74,8 @@ if {$SI_OR_PI == 0} {
 
   # interrupts
 
-  ad_cpu_interrupt ps-14 mb-14 /$hier_spi_engine/irq
+  ad_cpu_interrupt ps-12 mb-12 /$hier_spi_engine/irq
+
 } else {
   # data interfaces
 
@@ -112,7 +113,7 @@ if {$SI_OR_PI == 0} {
 
   # interrupts
 
-  ad_cpu_interrupt ps-12 mb-13 axi_ad7616/irq
+  ad_cpu_interrupt ps-10 mb-10 axi_ad7616/irq
 }
 
 # interface connections
@@ -135,4 +136,4 @@ ad_mem_hp1_interconnect sys_cpu_clk axi_ad7616_dma/m_dest_axi
 
 # interrupts
 
-ad_cpu_interrupt ps-13 mb-12 axi_ad7616_dma/irq
+ad_cpu_interrupt ps-13 mb-13 axi_ad7616_dma/irq
