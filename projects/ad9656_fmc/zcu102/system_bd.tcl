@@ -12,4 +12,3 @@ sysid_gen_sys_init_file
 ad_mem_hp0_interconnect sys_cpu_clk sys_ps8/S_AXI_HP0
 
 source ../common/ad9656_fmc_bd.tcl
-

@@ -21,5 +21,19 @@ set_instance_parameter_value rom_sys_0 {ROM_ADDR_BITS} {9}
 
 set_instance_parameter_value rom_sys_0 {PATH_TO_FILE} "[pwd]/mem_init_sys.txt"
 
-sysid_gen_sys_init_file;
+set sys_cstring "RX:RATE=$ad_project_params(RX_LANE_RATE)\
+M=$ad_project_params(RX_JESD_M)\
+L=$ad_project_params(RX_JESD_L)\
+S=$ad_project_params(RX_JESD_S)\
+NP=$ad_project_params(RX_JESD_NP)\
+LINKS=$ad_project_params(RX_NUM_LINKS)\
+KS/CH=$ad_project_params(RX_KS_PER_CHANNEL)\
+TX:RATE=$ad_project_params(TX_LANE_RATE)\
+M=$ad_project_params(TX_JESD_M)\
+L=$ad_project_params(TX_JESD_L)\
+S=$ad_project_params(TX_JESD_S)\
+NP=$ad_project_params(TX_JESD_NP)\
+LINKS=$ad_project_params(TX_NUM_LINKS)\
+KS/CH=$ad_project_params(TX_KS_PER_CHANNEL)"
+sysid_gen_sys_init_file sys_cstring
 

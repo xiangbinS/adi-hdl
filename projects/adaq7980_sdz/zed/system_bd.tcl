@@ -8,10 +8,11 @@ ad_ip_parameter axi_sysid_0 CONFIG.ROM_ADDR_BITS 9
 ad_ip_parameter rom_sys_0 CONFIG.PATH_TO_FILE "[pwd]/$mem_init_sys_path"
 ad_ip_parameter rom_sys_0 CONFIG.ROM_ADDR_BITS 9
 
-sysid_gen_sys_init_file
+set sys_cstring "ADC_SAMPLING_RATE=$adc_sampling_rate"
+
+sysid_gen_sys_init_file $sys_cstring
 
 # specify ADC sampling rate in samples/seconds -- default is 1 MSPS
 set adc_sampling_rate 1000000
 
 source ../common/adaq7980_bd.tcl
-

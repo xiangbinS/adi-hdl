@@ -90,7 +90,7 @@ proc rev_by_string {str} {
 # \param[custom_string] - string input
 #
 
-proc sysid_gen_sys_init_file {{custom_string {}}} {
+proc sysid_gen_sys_init_file {{custom_string {}} {address_bits {9}}} {
 
   global project_name;
   if {[info exists project_name]} {
@@ -164,7 +164,8 @@ proc sysid_gen_sys_init_file {{custom_string {}}} {
   puts "projname_string: $projname_string";
   puts "projname_hex: $projname_hex";
 
-  set custom_hex [hexstr_flip [stringtohex $custom_string 64]];
+  set custom_string_length [expr max(64, ([string length $custom_string] + 3) / 4 * 4)]
+  set custom_hex [hexstr_flip [stringtohex $custom_string $custom_string_length]];
 
   puts "custom_string: $custom_string";
   puts "custom_hex: $custom_hex";
@@ -192,7 +193,8 @@ proc sysid_gen_sys_init_file {{custom_string {}}} {
   set comh_hex [format %0-[expr [expr $table_size - 2] * 8]s $comh_hex];
   append comh_hex "00000000" [checksum8bit $comh_hex] "000000";
 
-  set sys_mem_hex [format %0-[expr 512 * 8]s [concat $comh_hex$verh_hex$projname_hex$boardname_hex$custom_hex]];
+  set memory_size [expr int(pow(2, $address_bits)) * 8]
+  set sys_mem_hex [format %0-${memory_size}s [concat $comh_hex$verh_hex$projname_hex$boardname_hex$custom_hex]];
 
   if {[info exists ::env(ADI_PROJECT_DIR)]} {
     set mem_init_sys_file_path "$::env(ADI_PROJECT_DIR)mem_init_sys.txt";

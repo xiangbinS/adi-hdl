@@ -13,4 +13,3 @@ sysid_gen_sys_init_file
 set sys_dma_clk [get_bd_nets sys_dma_clk]
 
 source ../common/cn0540_bd.tcl
-

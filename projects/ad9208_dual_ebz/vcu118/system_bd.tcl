@@ -34,5 +34,3 @@ foreach i {0 1} {
   ad_ip_parameter util_adc_${i}_xcvr CONFIG.PPF0_CFG 0xB00
 
 }
-
-
