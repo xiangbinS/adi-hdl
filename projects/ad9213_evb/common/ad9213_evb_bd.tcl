@@ -97,7 +97,7 @@ ad_connect  $sys_cpu_clk util_adc_xcvr/up_clk
 
 # connections (adc)
 
-ad_xcvrcon  util_adc_xcvr axi_ad9213_xcvr axi_ad9213_jesd {} glbl_clk_0
+ad_xcvrcon util_adc_xcvr axi_ad9213_xcvr axi_ad9213_jesd {4 0 2 1 3 8 9 7 6 11 10 15 12 14 13 5} glbl_clk_0 
 
 ## use global clock as device clock instead of rx_out_clk
 delete_bd_objs [get_bd_nets util_adc_xcvr_rx_out_clk_0]

@@ -183,7 +183,7 @@ module system_top (
   ad_3w_spi #(
     .NUM_OF_SLAVES(3)
   ) i_spi (
-    .spi_csn(spi_csn[3:0]),
+    .spi_csn(spi_csn[2:0]),
     .spi_clk(spi_clk),
     .spi_mosi(spi_mosi),
     .spi_miso(spi_miso),
