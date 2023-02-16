@@ -1,5 +1,5 @@
 # specify number of channels - the design supports one lane/two lanes
-set two_lanes 1
+set two_lanes 0
 
 source $ad_hdl_dir/projects/common/zed/zed_system_bd.tcl
 source $ad_hdl_dir/projects/scripts/adi_pd.tcl

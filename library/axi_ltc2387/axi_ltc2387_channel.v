@@ -150,6 +150,16 @@ module axi_ltc2387_channel #(
   end
   endgenerate
 
+  my_ila_fmt (
+    .clk (adc_clk),
+    .probe0 (adc_valid_in),
+    .probe1 (adc_data_in),
+    .probe2 (adc_valid),
+    .probe3 (adc_data),
+    .probe4 (adc_dfmt_enable_s),
+    .probe5 (adc_dfmt_type_s),
+    .probe6 (adc_dfmt_se_s));
+
   // adc channel regmap
 
   up_adc_channel #(

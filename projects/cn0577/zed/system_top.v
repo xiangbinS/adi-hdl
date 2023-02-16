@@ -125,7 +125,7 @@ module system_top (
 
   // hardcode GPIO to always use two lanes configuration
 
-  assign twolanes_cntrl = 1'b1;
+  assign twolanes_cntrl = 1'b0;
   assign cnv_en = cnv;
 
   // instantiations

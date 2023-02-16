@@ -3,6 +3,20 @@ source $ad_hdl_dir/library/scripts/adi_ip_xilinx.tcl
 
 adi_ip_create axi_ltc2387
 
+create_ip -name ila -vendor xilinx.com -library ip -version 6.2 -module_name my_ila_fmt
+    set_property -dict [list CONFIG.C_MONITOR_TYPE {Native}] [get_ips my_ila_fmt]
+    set_property -dict [list CONFIG.C_NUM_OF_PROBES {7}] [get_ips my_ila_fmt]
+    set_property -dict [list CONFIG.C_DATA_DEPTH {4096}] [get_ips my_ila_fmt]
+    set_property -dict [list CONFIG.C_TRIGIN_EN {false}] [get_ips my_ila_fmt]
+    set_property -dict [list CONFIG.C_PROBE0_WIDTH  {1}] [get_ips my_ila_fmt]
+    set_property -dict [list CONFIG.C_PROBE1_WIDTH  {18}] [get_ips my_ila_fmt]
+    set_property -dict [list CONFIG.C_PROBE2_WIDTH  {1}] [get_ips my_ila_fmt]
+    set_property -dict [list CONFIG.C_PROBE3_WIDTH  {18}] [get_ips my_ila_fmt]
+    set_property -dict [list CONFIG.C_PROBE4_WIDTH  {1}] [get_ips my_ila_fmt]
+    set_property -dict [list CONFIG.C_PROBE5_WIDTH  {1}] [get_ips my_ila_fmt]
+    set_property -dict [list CONFIG.C_PROBE6_WIDTH  {1}] [get_ips my_ila_fmt]
+    generate_target {all} [get_files axi_ltc2387.srcs/sources_1/ip/my_ila_fmt/my_ila_fmt.xci]
+
 adi_ip_files axi_ltc2387 [list \
   "$ad_hdl_dir/library/xilinx/common/ad_data_clk.v" \
   "$ad_hdl_dir/library/xilinx/common/ad_data_in.v" \
