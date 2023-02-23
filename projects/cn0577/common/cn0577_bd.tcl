@@ -1,3 +1,5 @@
+set TWOLANES [get_env_param TWOLANES 1]
+
 # ltc2387
 
 create_bd_port -dir I ref_clk
@@ -16,7 +18,7 @@ create_bd_port -dir O clk_gate
 ad_ip_instance axi_ltc2387 axi_ltc2387
 ad_ip_parameter axi_ltc2387 CONFIG.ADC_RES 18
 ad_ip_parameter axi_ltc2387 CONFIG.OUT_RES 32
-ad_ip_parameter axi_ltc2387 CONFIG.TWOLANES $two_lanes
+ad_ip_parameter axi_ltc2387 CONFIG.TWOLANES $TWOLANES
 ad_ip_parameter axi_ltc2387 CONFIG.ADC_INIT_DELAY 27
 
 # axi pwm gen
