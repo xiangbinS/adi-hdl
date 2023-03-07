@@ -164,8 +164,7 @@ FIELD
 [7:0] 0x00
 CUSTOM_CONTROL
 RW
-Select output format decode mode.(for ADAQ8092: bit 0 - enables digital output randomizer decode
-, bit 1 - enables alternate bit polarity decode).
+{{page>:resources:fpga:docs:hdl:regmap_adc_custom}}
 ENDFIELD
 
 ############################################################################################
