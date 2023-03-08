@@ -119,13 +119,14 @@ module system_top (
 
   // instantiations
 
-  assign adc_serpar = gpio_o[39];
-  assign adc_refsel = gpio_o[38];
-  assign adc_reset = gpio_o[37];
-  assign adc_stby = gpio_o[36];
-  assign adc_range = gpio_o[35];
-  assign adc_os = gpio_o[34:32];
-  assign gpio_i[63:32] = gpio_o[63:32];
+  assign adc_serpar = gpio_o[40];
+  assign adc_refsel = gpio_o[39];
+  assign adc_reset = gpio_o[38];
+  assign adc_stby = gpio_o[37];
+  assign adc_range = gpio_o[36];
+  assign adc_os = gpio_o[35:33];
+  assign gpio_i[32] = adc_first_data;
+  assign gpio_i[63:33] = gpio_o[63:33];
 
   generate
     for (i = 0; i < 16; i = i + 1) begin: adc_db_io

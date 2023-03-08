@@ -41,7 +41,6 @@ module axi_ad7606x #(
   parameter       DEV_CONFIG = 0,
   parameter       ADC_TO_DMA_N_BITS = 16,
   parameter       ADC_N_BITS = 16,
-  parameter       ADC_READ_MODE = 0,
   parameter       EXTERNAL_CLK = 0
 ) (
 
@@ -134,6 +133,8 @@ module axi_ad7606x #(
   wire    [15:0]                    adc_crc;
   wire    [15:0]                    adc_crc_res;
   wire                              adc_crc_err;
+  wire                              adc_mode_en;
+  wire    [ 7:0]                    adc_custom_control;
 
   wire                              adc_dfmt_enable_s[0:7];
   wire                              adc_dfmt_type_s[0:7];
@@ -299,9 +300,7 @@ module axi_ad7606x #(
 
   generate
     if (DEV_CONFIG == 0 || DEV_CONFIG == 1) begin
-      axi_ad7606x_16b_pif #(
-        .ADC_READ_MODE (ADC_READ_MODE)
-      ) i_ad7606_parallel_interface (
+      axi_ad7606x_16b_pif i_ad7606_parallel_interface (
         .cs_n (rx_cs_n),
         .db_o (rx_db_o),
         .db_i (rx_db_i),
@@ -335,13 +334,13 @@ module axi_ad7606x #(
         .rstn (up_rstn),
         .adc_config_ctrl (adc_config_ctrl_s),
         .adc_ctrl_status (adc_ctrl_status_s),
+        .adc_mode_en (adc_mode_en),
+        .adc_custom_control (adc_custom_control),
         .wr_data (wr_data_s[15:0]),
         .rd_data (rd_data_s),
         .rd_valid (rd_valid_s));
     end else begin
-      axi_ad7606x_18b_pif #(
-        .ADC_READ_MODE (ADC_READ_MODE)
-      ) i_ad7606_parallel_interface (
+      axi_ad7606x_18b_pif i_ad7606_parallel_interface (
         .cs_n (rx_cs_n),
         .db_o (rx_db_o),
         .db_i (rx_db_i),
@@ -375,6 +374,8 @@ module axi_ad7606x #(
         .rstn (up_rstn),
         .adc_config_ctrl (adc_config_ctrl_s),
         .adc_ctrl_status (adc_ctrl_status_s),
+        .adc_mode_en (adc_mode_en),
+        .adc_custom_control (adc_custom_control),
         .wr_data (wr_data_s[15:0]),
         .rd_data (rd_data_s),
         .rd_valid (rd_valid_s));
@@ -382,14 +383,14 @@ module axi_ad7606x #(
   endgenerate
 
   assign adc_data_s = {adc_data_0_s,adc_data_1_s,adc_data_2_s,adc_data_3_s,adc_data_4_s,adc_data_5_s,adc_data_6_s,adc_data_7_s};
-  assign adc_data_0 = dma_data[0*ADC_TO_DMA_N_BITS+(ADC_N_BITS-1):0*ADC_TO_DMA_N_BITS];
-  assign adc_data_1 = dma_data[1*ADC_TO_DMA_N_BITS+(ADC_N_BITS-1):1*ADC_TO_DMA_N_BITS];
-  assign adc_data_2 = dma_data[2*ADC_TO_DMA_N_BITS+(ADC_N_BITS-1):2*ADC_TO_DMA_N_BITS];
-  assign adc_data_3 = dma_data[3*ADC_TO_DMA_N_BITS+(ADC_N_BITS-1):3*ADC_TO_DMA_N_BITS];
-  assign adc_data_4 = dma_data[4*ADC_TO_DMA_N_BITS+(ADC_N_BITS-1):4*ADC_TO_DMA_N_BITS];
-  assign adc_data_5 = dma_data[5*ADC_TO_DMA_N_BITS+(ADC_N_BITS-1):5*ADC_TO_DMA_N_BITS];
-  assign adc_data_6 = dma_data[6*ADC_TO_DMA_N_BITS+(ADC_N_BITS-1):6*ADC_TO_DMA_N_BITS];
-  assign adc_data_7 = dma_data[7*ADC_TO_DMA_N_BITS+(ADC_N_BITS-1):7*ADC_TO_DMA_N_BITS];
+  assign adc_data_7 = dma_data[0*ADC_TO_DMA_N_BITS+(ADC_TO_DMA_N_BITS-1):0*ADC_TO_DMA_N_BITS];
+  assign adc_data_6 = dma_data[1*ADC_TO_DMA_N_BITS+(ADC_TO_DMA_N_BITS-1):1*ADC_TO_DMA_N_BITS];
+  assign adc_data_5 = dma_data[2*ADC_TO_DMA_N_BITS+(ADC_TO_DMA_N_BITS-1):2*ADC_TO_DMA_N_BITS];
+  assign adc_data_4 = dma_data[3*ADC_TO_DMA_N_BITS+(ADC_TO_DMA_N_BITS-1):3*ADC_TO_DMA_N_BITS];
+  assign adc_data_3 = dma_data[4*ADC_TO_DMA_N_BITS+(ADC_TO_DMA_N_BITS-1):4*ADC_TO_DMA_N_BITS];
+  assign adc_data_2 = dma_data[5*ADC_TO_DMA_N_BITS+(ADC_TO_DMA_N_BITS-1):5*ADC_TO_DMA_N_BITS];
+  assign adc_data_1 = dma_data[6*ADC_TO_DMA_N_BITS+(ADC_TO_DMA_N_BITS-1):6*ADC_TO_DMA_N_BITS];
+  assign adc_data_0 = dma_data[7*ADC_TO_DMA_N_BITS+(ADC_TO_DMA_N_BITS-1):7*ADC_TO_DMA_N_BITS];
 
   up_adc_common #(
     .ID (ID),
@@ -412,8 +413,8 @@ module axi_ad7606x #(
     .adc_ext_sync_disarm (),
     .adc_ext_sync_manual_req (),
     .adc_num_lanes (),
-    .adc_custom_control (),
-    .adc_crc_enable (),
+    .adc_custom_control (adc_custom_control),
+    .adc_crc_enable (adc_mode_en),
     .adc_sdr_ddr_n (),
     .adc_symb_op (),
     .adc_symb_8_16b (),

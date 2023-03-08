@@ -1,4 +1,3 @@
-
 # ad7606x
 
 set_property -dict {PACKAGE_PIN N19     IOSTANDARD LVCMOS25} [get_ports adc_db[0] ]         ; ## D08 FMC_LPC_LA01_CC_P
