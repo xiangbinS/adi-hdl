@@ -1,4 +1,3 @@
-
 # pluto_ng pinout
 
 set_property -dict {PACKAGE_PIN J7 IOSTANDARD LVCMOS18} [get_ports gp_int]                                      ; ## IO_L24P_65_ADRV9002_GP_INT
@@ -77,7 +76,6 @@ set_property  -dict {PACKAGE_PIN Y5    IOSTANDARD LVDS  DIFF_TERM_ADV TERM_100} 
 set_property  -dict {PACKAGE_PIN AE9   IOSTANDARD LVCMOS18}                      [get_ports adrv9002_mcssrc]    ; ## IO_L4N_64_ADRV9002_MCSSRC
 set_property  -dict {PACKAGE_PIN C1    IOSTANDARD LVCMOS18}                      [get_ports fan_en]             ; ## IO_L7P_66_FAN_EN
 set_property  -dict {PACKAGE_PIN B1    IOSTANDARD LVCMOS18}                      [get_ports fan_ctl]            ; ## IO_L7N_66_FAN_CTL
-
 
 set_property  -dict {PACKAGE_PIN AD6   IOSTANDARD LVCMOS18}                      [get_ports dgpio[0]]           ; ## IO_L5P_64_ADRV9002_DGPIO_0
 set_property  -dict {PACKAGE_PIN AD5   IOSTANDARD LVCMOS18}                      [get_ports dgpio[1]]           ; ## IO_L5N_64_ADRV9002_DGPIO_1
