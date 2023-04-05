@@ -5,7 +5,7 @@ create_bd_intf_port -mode Master -vlnv xilinx.com:interface:gt_rtl:1.0 sfp_txr
 
 ad_ip_instance xxv_ethernet ethernet_sfp
 ad_ip_parameter ethernet_sfp CONFIG.ADD_GT_CNTRL_STS_PORTS {0}
-ad_ip_parameter ethernet_sfp CONFIG.BASE_R_KR {BASE-KR}
+ad_ip_parameter ethernet_sfp CONFIG.BASE_R_KR {BASE-R}
 #ad_ip_parameter ethernet_sfp CONFIG.INCLUDE_AUTO_NEG_LT_LOGIC {Include AN/LT Logic}
 ad_ip_parameter ethernet_sfp CONFIG.CORE {Ethernet MAC+PCS/PMA 64-bit}
 ad_ip_parameter ethernet_sfp CONFIG.DATA_PATH_INTERFACE {AXI Stream}
