@@ -80,6 +80,7 @@ module dmac_sg #(
 
   // Read data and response
   input  [DMA_DATA_WIDTH-1:0]      m_axi_rdata,
+  input                            m_axi_rlast,
   output                           m_axi_rready,
   input                            m_axi_rvalid,
   input  [ 1:0]                    m_axi_rresp
@@ -198,7 +199,7 @@ module dmac_sg #(
           end
 
         STATE_RECV_DESC: begin
-          if (m_axi_rvalid == 1'b1 && hwdesc_counter == 5) begin
+          if (m_axi_rvalid == 1'b1 && m_axi_rlast == 1'b1) begin
             hwdesc_state <= STATE_DESC_READY;
           end
           end

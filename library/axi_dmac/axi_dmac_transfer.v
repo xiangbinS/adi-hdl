@@ -150,6 +150,7 @@ module axi_dmac_transfer #(
 
   // Read data and response
   input [DMA_DATA_WIDTH_SRC-1:0] m_sg_axi_rdata,
+  input m_sg_axi_rlast,
   output m_sg_axi_rready,
   input m_sg_axi_rvalid,
   input [1:0] m_sg_axi_rresp,
@@ -222,7 +223,6 @@ module axi_dmac_transfer #(
   wire [DMA_LENGTH_WIDTH-1:0] dma_sg_dst_stride;
   wire [31:0] dma_sg_hwdesc_id;
   wire dma_sg_hwdesc_eot;
-  wire dma_sg_in_eot;
   wire dma_sg_in_req_valid;
   wire dma_sg_in_req_ready;
   wire dma_sg_out_req_valid;
@@ -249,6 +249,7 @@ module axi_dmac_transfer #(
   wire req_ready_gated;
 
   wire abort_req;
+  wire dma_eot;
 
   axi_dmac_reset_manager #(
     .ASYNC_CLK_REQ_SRC (ASYNC_CLK_REQ_SRC),
@@ -288,8 +289,8 @@ module axi_dmac_transfer #(
   assign req_valid_gated = req_enable & req_valid;
   assign req_ready = req_enable & req_ready_gated;
 
-  assign req_arb_enable = ctrl_enable || !dma_sg_in_req_ready;
-  assign req_eot = ctrl_hwdesc == 1'b1 ? (dma_sg_in_eot & dma_sg_hwdesc_eot) : dma_req_eot;
+  assign req_arb_enable = ctrl_enable | (ctrl_hwdesc & !dma_sg_in_req_ready);
+  assign req_eot = ctrl_hwdesc == 1'b1 ? (dma_eot & dma_sg_hwdesc_eot) : dma_eot;
   assign req_sg_desc_id = ctrl_hwdesc == 1'b1 ? dma_sg_hwdesc_id : 'h00;
   assign dma_sg_in_req_valid = ctrl_hwdesc == 1'b1 ? req_valid_gated : 1'b0;
 
@@ -327,7 +328,7 @@ module axi_dmac_transfer #(
     .out_src_stride(dma_sg_src_stride),
     .resp_out_id(dma_sg_hwdesc_id),
     .resp_out_eot(dma_sg_hwdesc_eot),
-    .resp_in_valid(dma_sg_in_eot),
+    .resp_in_valid(dma_eot),
 
     .m_axi_arready(m_sg_axi_arready),
     .m_axi_arvalid(m_sg_axi_arvalid),
@@ -339,6 +340,7 @@ module axi_dmac_transfer #(
     .m_axi_arcache(m_sg_axi_arcache),
 
     .m_axi_rdata(m_sg_axi_rdata),
+    .m_axi_rlast(m_sg_axi_rlast),
     .m_axi_rready(m_sg_axi_rready),
     .m_axi_rvalid(m_sg_axi_rvalid),
     .m_axi_rresp(m_sg_axi_rresp));
@@ -381,7 +383,7 @@ module axi_dmac_transfer #(
 
   assign dma_2d_req_valid = ctrl_hwdesc == 1'b1 ? dma_sg_out_req_valid : req_valid_gated;
   assign req_ready_gated = ctrl_hwdesc == 1'b1 ? dma_sg_in_req_ready : dma_2d_req_ready;
-  assign dma_sg_in_eot = dma_2d_eot;
+  assign dma_eot = dma_2d_eot;
   assign dma_sg_out_req_ready = dma_2d_req_ready;
 
   dmac_2d_transfer #(
@@ -430,7 +432,7 @@ module axi_dmac_transfer #(
   /* Request */
   assign dma_req_valid = ctrl_hwdesc == 1'b1 ? dma_sg_out_req_valid : req_valid_gated;
   assign req_ready_gated = ctrl_hwdesc == 1'b1 ? dma_sg_in_req_ready : dma_req_ready;
-  assign dma_sg_in_eot = dma_req_eot;
+  assign dma_eot = dma_req_eot;
   assign dma_sg_out_req_ready = dma_req_ready;
 
   assign dma_req_dest_address = ctrl_hwdesc == 1'b1 ? dma_sg_out_dest_address : req_dest_address;

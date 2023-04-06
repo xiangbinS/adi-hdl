@@ -185,6 +185,8 @@ module axi_dmac #(
   output                                   m_sg_axi_rready,
   input                                    m_sg_axi_rvalid,
   input  [ 1:0]                            m_sg_axi_rresp,
+  input  [AXI_ID_WIDTH_SRC-1:0]            m_sg_axi_rid,
+  input                                    m_sg_axi_rlast,
 
   // Unused write interface
   output                                   m_src_axi_awvalid,
@@ -605,6 +607,7 @@ module axi_dmac #(
     .m_sg_axi_rdata(m_sg_axi_rdata),
     .m_sg_axi_rready(m_sg_axi_rready),
     .m_sg_axi_rvalid(m_sg_axi_rvalid),
+    .m_sg_axi_rlast(m_sg_axi_rlast),
     .m_sg_axi_rresp(m_sg_axi_rresp),
 
     .s_axis_aclk(s_axis_aclk),
