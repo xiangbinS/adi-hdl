@@ -46,11 +46,7 @@ module system_top (
   output                  sfp_tx_p,
 
   input                   sfp_ref_clk_p,
-  input                   sfp_ref_clk_n,
-
-  output                  spi_clk,
-  output                  spi_mosi,
-  input                   spi_miso);
+  input                   sfp_ref_clk_n);
 
   // internal signals
 
@@ -78,10 +74,10 @@ module system_top (
     
     .sfp_ref_clk_0_clk_n (sfp_ref_clk_n),
     .sfp_ref_clk_0_clk_p (sfp_ref_clk_p),
-    .spi0_sclk (spi_clk),
+    .spi0_sclk (),
     .spi0_csn (spi_csn),
-    .spi0_miso (spi_miso),
-    .spi0_mosi (spi_mosi),
+    .spi0_miso (1'b0),
+    .spi0_mosi (),
     .spi1_sclk (),
     .spi1_csn (),
     .spi1_miso (1'b0),
