@@ -40,8 +40,8 @@ module system_top (
   input   [12:0]    gpio_bd_i,
   output  [ 7:0]    gpio_bd_o,
 
-  input    [3:0]    mipi_ch0_data_n,
-  input    [3:0]    mipi_ch0_data_p,
+  input    [1:0]    mipi_ch0_data_n,
+  input    [1:0]    mipi_ch0_data_p,
   input             mipi_ch0_clk_n,
   input             mipi_ch0_clk_p,
 
