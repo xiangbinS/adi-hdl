@@ -6,16 +6,33 @@ create_bd_intf_port -mode Master -vlnv xilinx.com:interface:gt_rtl:1.0 sfp_txr
 ad_ip_instance xxv_ethernet ethernet_sfp
 ad_ip_parameter ethernet_sfp CONFIG.ADD_GT_CNTRL_STS_PORTS {0}
 ad_ip_parameter ethernet_sfp CONFIG.BASE_R_KR {BASE-R}
-#ad_ip_parameter ethernet_sfp CONFIG.INCLUDE_AUTO_NEG_LT_LOGIC {Include AN/LT Logic}
 ad_ip_parameter ethernet_sfp CONFIG.CORE {Ethernet MAC+PCS/PMA 64-bit}
 ad_ip_parameter ethernet_sfp CONFIG.DATA_PATH_INTERFACE {AXI Stream}
 ad_ip_parameter ethernet_sfp CONFIG.ENABLE_PREEMPTION {0}
-ad_ip_parameter ethernet_sfp CONFIG.ENABLE_TIME_STAMPING {0}
+ad_ip_parameter ethernet_sfp CONFIG.ENABLE_TIME_STAMPING {1}
+ad_ip_parameter ethernet_sfp CONFIG.SYS_CLK {10000}
 ad_ip_parameter ethernet_sfp CONFIG.GT_GROUP_SELECT {Quad_X1Y3}
 ad_ip_parameter ethernet_sfp CONFIG.GT_LOCATION {1}
 ad_ip_parameter ethernet_sfp CONFIG.INCLUDE_AXI4_INTERFACE {1}
 ad_ip_parameter ethernet_sfp CONFIG.INCLUDE_USER_FIFO {1}
 ad_ip_parameter ethernet_sfp CONFIG.LANE1_GT_LOC {X1Y12}
+
+ad_ip_instance ptp_1588_timer_syncer ptp_timer_syncer_0
+ad_ip_parameter ptp_timer_syncer_0 CONFIG.AXI4LITE_FREQ {100}
+ad_ip_parameter ptp_timer_syncer_0 CONFIG.TS_CLK_PERIOD {10.000}
+
+# CORE_MODE                      => Timer_Syncer
+# TS_CLK_PERIOD                  => 10.000
+# ENABLE_EXT_TOD_BUS             => 0
+# TIMER_FORMAT                   => Time_of_Day
+# NUM_PORTS                      => 1
+# CORE_MODE_INT                  => 2
+# TIMER_FORMAT_INT               => 2
+# AXI4LITE_CLK_PERIOD            => 10.0000
+# TS_CLK_PERIOD_NS               => 1e-8
+# TS_CLK_PERIOD_SCALED_2E48_INT  => 2814749767106560
+# THIRTY_MILLISEC_COUNT_INT      => 3000000
+# THIRTY_MILLISEC_COUNT_FAST_INT => 3000
 
 ad_ip_instance axi_dma dma_sfp
 ad_ip_parameter dma_sfp CONFIG.c_include_sg 1
@@ -103,19 +120,53 @@ ad_connect util_not_3/Res ethernet_sfp/rx_reset_0
 ad_connect dma_sfp/mm2s_prmry_reset_out_n util_not_4/Op1
 ad_connect util_not_4/Res ethernet_sfp/tx_reset_0
 
-ad_connect sys_cpu_clk  ethernet_sfp/dclk
-ad_connect sys_cpu_reset  ethernet_sfp/sys_reset
+ad_connect sys_cpu_clk ethernet_sfp/dclk
+ad_connect sys_cpu_reset ethernet_sfp/sys_reset
 
 ad_connect constant_101b/dout ethernet_sfp/rxoutclksel_in_0
 ad_connect constant_101b/dout ethernet_sfp/txoutclksel_in_0
 
 ad_connect ethernet_sfp/rx_core_clk_0 ethernet_sfp/rx_clk_out_0
 
+# PTP timer syncer
+
+ad_connect sys_cpu_reset ptp_timer_syncer_0/ts_rst
+ad_connect sys_cpu_clk ptp_timer_syncer_0/ts_clk
+
+ad_connect ethernet_sfp/tx_period_ns_0 ptp_timer_syncer_0/core_tx0_period_0
+ad_connect ethernet_sfp/rx_period_ns_0 ptp_timer_syncer_0/core_rx0_period_0
+
+ad_connect ethernet_sfp/tx_clk_out_0 ptp_timer_syncer_0/tx_phy_clk_0
+ad_connect ethernet_sfp/rx_clk_out_0 ptp_timer_syncer_0/rx_phy_clk_0
+
+ad_connect ethernet_sfp/user_tx_reset_0 ptp_timer_syncer_0/tx_phy_rst_0
+ad_connect ethernet_sfp/user_rx_reset_0 ptp_timer_syncer_0/rx_phy_rst_0
+
+create_bd_port -dir O -from 47 -to 0 tx_tod_sec_0
+create_bd_port -dir O -from 31 -to 0 tx_tod_ns_0
+create_bd_port -dir O -from 47 -to 0 rx_tod_sec_0
+create_bd_port -dir O -from 31 -to 0 rx_tod_ns_0
+
+ad_connect ptp_timer_syncer_0/tx_tod_sec_0 tx_tod_sec_0
+ad_connect ptp_timer_syncer_0/tx_tod_ns_0 tx_tod_ns_0
+ad_connect ptp_timer_syncer_0/rx_tod_sec_0 rx_tod_sec_0
+ad_connect ptp_timer_syncer_0/rx_tod_ns_0 rx_tod_ns_0
+
+create_bd_port -dir I -from 79 -to 0 ctl_tx_systemtimerin_0
+create_bd_port -dir I -from 79 -to 0 ctl_rx_systemtimerin_0
+
+ad_connect ethernet_sfp/ctl_tx_systemtimerin_0 ctl_tx_systemtimerin_0
+ad_connect ethernet_sfp/ctl_rx_systemtimerin_0 ctl_rx_systemtimerin_0
+
+#
+
 ad_cpu_interconnect 0x82100000 ethernet_sfp
 ad_cpu_interconnect 0x82200000 dma_sfp
+ad_cpu_interconnect 0x82300000 ptp_timer_syncer_0
 
 ad_cpu_interrupt ps-0 mb-0 dma_sfp/mm2s_introut
 ad_cpu_interrupt ps-1 mb-1 dma_sfp/s2mm_introut
+ad_cpu_interrupt ps-2 mb-2 ptp_timer_syncer_0/tod_intr
 
 ad_mem_hp0_interconnect sys_cpu_clk sys_ps7/S_AXI_HP0
 ad_mem_hp0_interconnect sys_cpu_clk dma_sfp/M_AXI_SG

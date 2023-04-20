@@ -56,6 +56,11 @@ module system_top (
   wire        [20:0]      gpio_bd;
   wire        [ 2:0]      spi_csn;
 
+  wire        [47:0]      tx_tod_sec_0;
+  wire        [31:0]      tx_tod_ns_0;
+  wire        [47:0]      rx_tod_sec_0;
+  wire        [31:0]      rx_tod_ns_0;
+
   assign gpio_i[94:21] = gpio_o[94:21];
 
   assign gpio_i[ 7: 0] = gpio_o[ 7: 0];
@@ -66,14 +71,22 @@ module system_top (
     .gpio_i (gpio_i),
     .gpio_o (gpio_o),
     .gpio_t (gpio_t),
-    
+
     .sfp_txr_grx_n (sfp_rx_n),
     .sfp_txr_grx_p (sfp_rx_p),
     .sfp_txr_gtx_n (sfp_tx_n),
     .sfp_txr_gtx_p (sfp_tx_p),
-    
+
     .sfp_ref_clk_0_clk_n (sfp_ref_clk_n),
     .sfp_ref_clk_0_clk_p (sfp_ref_clk_p),
+
+    .ctl_tx_systemtimerin_0 ({tx_tod_sec_0, tx_tod_ns_0}),
+    .ctl_rx_systemtimerin_0 ({rx_tod_sec_0, rx_tod_ns_0}),
+    .tx_tod_sec_0 (tx_tod_sec_0),
+    .tx_tod_ns_0 (tx_tod_ns_0),
+    .rx_tod_sec_0 (rx_tod_sec_0),
+    .rx_tod_ns_0 (rx_tod_ns_0),
+
     .spi0_sclk (),
     .spi0_csn (spi_csn),
     .spi0_miso (1'b0),
