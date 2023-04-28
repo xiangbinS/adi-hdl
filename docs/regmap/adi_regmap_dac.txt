@@ -478,7 +478,7 @@ The DDS scale for tone 1. Defines the amplitude of the tone. The format is
 16-bits, note that if you do use both channels and set both scale to 0x4000, 
 it is over-range. The final output is (channel_1_fullscale * scale_1) + 
 (channel_2 * scale_2).
-NOT-APPLICABLE if DDS_DISABLE is set (0x1).
+NOT-APPLICABLE if DDS_DISABLE is set (0x1). DDS_DISABLE is parameter in HDL.
 ENDFIELD
 
 ############################################################################################
@@ -496,7 +496,7 @@ DDS_INIT_1[15:0]
 RW
 The DDS phase initialization for tone 1. Defines the initial phase offset of 
 the tone.
-NOT-APPLICABLE if DDS_DISABLE is set (0x1).
+NOT-APPLICABLE if DDS_DISABLE is set (0x1). DDS_DISABLE is parameter in HDL.
 ENDFIELD
 
 FIELD
@@ -507,7 +507,7 @@ Defines the resolution of the phase accumulator. Its value can be defined by
 <m>INCR = (f_out * 2^16) * clkratio / f_if</m>; where f_out is the generated 
 output frequency, and f_if is the frequency of the digital interface, and 
 clock_ratio is the ratio between the sampling clock and the interface clock.
-NOT-APPLICABLE if DDS_DISABLE is set (0x1).
+NOT-APPLICABLE if DDS_DISABLE is set (0x1). DDS_DISABLE is parameter in HDL.
 ENDFIELD
 
 ############################################################################################
@@ -523,12 +523,12 @@ FIELD
 [15:0] 0x0000
 DDS_SCALE_2[15:0]
 RW
-The DDS scale for tone 1. Defines the amplitude of the tone. The format is 
+The DDS scale for tone 2. Defines the amplitude of the tone. The format is 
 1.1.14 fixed point (signed, integer, fractional). The DDS in general runs on 
 16-bits, note that if you do use both channels and set both scale to 0x4000, 
 it is over-range. The final output is (channel_1_fullscale * scale_1) + 
 (channel_2 * scale_2).
-NOT-APPLICABLE if DDS_DISABLE is set (0x1).
+NOT-APPLICABLE if DDS_DISABLE is set (0x1). DDS_DISABLE is parameter in HDL.
 ENDFIELD
 
 ############################################################################################
@@ -546,7 +546,7 @@ DDS_INIT_2[15:0]
 RW
 The DDS phase initialization for tone 1. Defines the initial phase offset of 
 the tone.
-NOT-APPLICABLE if DDS_DISABLE is set (0x1).
+NOT-APPLICABLE if DDS_DISABLE is set (0x1). DDS_DISABLE is parameter in HDL.
 ENDFIELD
 
 FIELD
@@ -557,7 +557,7 @@ Defines the resolution of the phase accumulator. Its value can be defined by
 <m>INCR = (f_out * 2^16) * clkratio / f_if</m>; where f_out is the generated 
 output frequency, and f_if is the frequency of the digital interface, and 
 clock_ratio is the ratio between the sampling clock and the interface clock.
-NOT-APPLICABLE if DDS_DISABLE is set (0x1).
+NOT-APPLICABLE if DDS_DISABLE is set (0x1). DDS_DISABLE is parameter in HDL.
 ENDFIELD
 
 ############################################################################################
