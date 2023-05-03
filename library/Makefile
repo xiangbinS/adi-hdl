@@ -13,6 +13,12 @@ all: lib
 
 
 clean:
+	$(MAKE) -C i3c_controller/i3c_controller_execution clean
+	$(MAKE) -C i3c_controller/axi_i3c_controller clean
+	$(MAKE) -C i3c_controller/i3c_controller_execution clean
+	$(MAKE) -C i3c_controller/axi_i3c_controller clean
+	$(MAKE) -C i3c_controller/i3c_controller_execution clean
+	$(MAKE) -C i3c_controller/axi_i3c_controller clean
 	$(MAKE) -C ad463x_data_capture clean
 	$(MAKE) -C axi_ad5766 clean
 	$(MAKE) -C axi_ad7606x clean
@@ -135,6 +141,12 @@ clean-all:clean
 
 
 lib:
+	$(MAKE) -C i3c_controller/i3c_controller_execution
+	$(MAKE) -C i3c_controller/axi_i3c_controller
+	$(MAKE) -C i3c_controller/i3c_controller_execution
+	$(MAKE) -C i3c_controller/axi_i3c_controller
+	$(MAKE) -C i3c_controller/i3c_controller_execution
+	$(MAKE) -C i3c_controller/axi_i3c_controller
 	$(MAKE) -C ad463x_data_capture
 	$(MAKE) -C axi_ad5766
 	$(MAKE) -C axi_ad7606x
