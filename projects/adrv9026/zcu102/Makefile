@@ -1,16 +1,23 @@
 ####################################################################################
-## Copyright 2018(c) Analog Devices, Inc.
+## Copyright (c) 2018 - 2023 Analog Devices, Inc.
+### SPDX short identifier: BSD-1-Clause
 ## Auto-generated, do not modify!
 ####################################################################################
 
 PROJECT_NAME := adrv9026_zcu102
 
 M_DEPS += ../common/adrv9026_bd.tcl
-M_DEPS += $(ADI_HDL_DIR)/projects/common/zcu102/zcu102_system_constr.xdc
-M_DEPS += $(ADI_HDL_DIR)/projects/common/zcu102/zcu102_system_bd.tcl
-M_DEPS += $(ADI_HDL_DIR)/projects/common/xilinx/dacfifo_bd.tcl
-M_DEPS += $(ADI_HDL_DIR)/library/common/ad_iobuf.v
-M_DEPS += $(ADI_HDL_DIR)/library/jesd204/scripts/jesd204.tcl
+M_DEPS += ../../scripts/adi_pd.tcl
+M_DEPS += ../../common/zcu102/zcu102_system_constr.xdc
+M_DEPS += ../../common/zcu102/zcu102_system_bd.tcl
+M_DEPS += ../../common/xilinx/dacfifo_bd.tcl
+M_DEPS += ../../common/xilinx/adi_fir_filter_constr.xdc
+M_DEPS += ../../common/xilinx/adi_fir_filter_bd.tcl
+M_DEPS += ../../../library/util_cdc/sync_bits.v
+M_DEPS += ../../../library/jesd204/scripts/jesd204.tcl
+M_DEPS += ../../../library/common/util_pulse_gen.v
+M_DEPS += ../../../library/common/ad_iobuf.v
+M_DEPS += ../../../library/common/ad_bus_mux.v
 
 LIB_DEPS += axi_dmac
 LIB_DEPS += axi_sysid
@@ -27,8 +34,4 @@ LIB_DEPS += util_pack/util_upack2
 LIB_DEPS += xilinx/axi_adxcvr
 LIB_DEPS += xilinx/util_adxcvr
 
-ifndef ADI_HDL_DIR
-$(error ADI_HDL_DIR is not set)
-endif
-
-include $(ADI_HDL_DIR)/projects/scripts/project-xilinx.mk
+include ../../scripts/project-xilinx.mk
