@@ -142,7 +142,7 @@ if {$CAPTURE_ZONE == 1} {
     1 -
     2 {
       ## SDI is latched by the data capture
-      ad_ip_instance adaq4224_data_capture data_capture
+      ad_ip_instance ad463x_data_capture data_capture
       ad_ip_parameter data_capture CONFIG.DDR_EN $DDR_EN
       ad_ip_parameter data_capture CONFIG.NUM_OF_LANES $NUM_OF_SDI
 
