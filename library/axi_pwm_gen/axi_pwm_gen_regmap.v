@@ -246,7 +246,7 @@ module axi_pwm_gen_regmap #(
       .in_data ({up_pwm_offset_3,
                  up_pwm_offset_2,
                  up_pwm_offset_1,
-                 up_pwm_offset_0}),
+                 32'd0}),
       .out_clk (clk_out),
       .out_data (pwm_offset));
 
@@ -265,7 +265,7 @@ module axi_pwm_gen_regmap #(
     assign pwm_gen_resetn = ~up_reset;
     assign pwm_period = {up_pwm_period_3, up_pwm_period_2, up_pwm_period_1, up_pwm_period_0};
     assign pwm_width = {up_pwm_width_3, up_pwm_width_2, up_pwm_width_1, up_pwm_width_0};
-    assign pwm_offset = {up_pwm_offset_3, up_pwm_offset_2, up_pwm_offset_1, up_pwm_offset_0};
+    assign pwm_offset = {up_pwm_offset_3, up_pwm_offset_2, up_pwm_offset_1, 32'd0};
     assign load_config = up_load_config;
 
   end
