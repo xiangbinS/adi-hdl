@@ -50,10 +50,15 @@ module system_top (
 
   wire    [94:0]  gpio_i;
   wire    [94:0]  gpio_o;
+  wire            ap_rstn_frmbuf;
+  wire            csirxss_rstn;
 
   assign gpio_i[94:21] = gpio_o[94:21];
 
   assign gpio_i[ 7:0] = gpio_o[7:0];
+
+  assign csirxss_rstn = gpio_o[22];
+  assign ap_rstn_frmbuf = gpio_o[21];
 
   assign gpio_bd_o = gpio_o[ 7:0];
   assign gpio_i[20:8] = gpio_bd_i;
@@ -72,6 +77,8 @@ module system_top (
     .spi1_mosi (),
     .spi1_sclk (),
     .bg3_pin6_nc (bg3_pin6_nc_0),
+    .ap_rstn_frmbuf (ap_rstn_frmbuf),
+    .csirxss_rstn (csirxss_rstn),
 
     .mipi_csi_ch0_data_n (mipi_ch0_data_n),
     .mipi_csi_ch0_data_p (mipi_ch0_data_p),

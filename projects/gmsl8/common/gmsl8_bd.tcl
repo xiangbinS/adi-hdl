@@ -7,7 +7,11 @@ create_bd_port -dir I mipi_csi_ch0_clk_n
 create_bd_port -dir I -from 1 -to 0 mipi_csi_ch0_data_p
 create_bd_port -dir I -from 1 -to 0 mipi_csi_ch0_data_n
 
+
 create_bd_port -dir I bg3_pin6_nc
+
+create_bd_port -dir I ap_rstn_frmbuf
+create_bd_port -dir I csirxss_rstn
 
 #ad_ip_parameter sys_ps8 CONFIG.PSU__USE__VIDEO {1}
 #ad_ip_parameter sys_ps8 CONFIG.PSU__PCIE__PERIPHERAL__ENABLE {0}
@@ -21,8 +25,10 @@ ad_ip_parameter mipi_csi_ch0 CONFIG.CMN_PXL_FORMAT {YUV422_8bit}
 ad_ip_parameter mipi_csi_ch0 CONFIG.CMN_INC_VFB {true}
 ad_ip_parameter mipi_csi_ch0 CONFIG.CMN_NUM_LANES {2}
 ad_ip_parameter mipi_csi_ch0 CONFIG.VFB_TU_WIDTH {1}
-ad_ip_parameter mipi_csi_ch0 CONFIG.CMN_NUM_PIXELS {2}
-ad_ip_parameter mipi_csi_ch0 CONFIG.DPY_LINE_RATE {456}
+ad_ip_parameter mipi_csi_ch0 CONFIG.CMN_NUM_PIXELS {1}
+ad_ip_parameter mipi_csi_ch0 CONFIG.C_HS_LINE_RATE {672}
+ad_ip_parameter mipi_csi_ch0 CONFIG.C_HS_SETTLE_NS {149}
+ad_ip_parameter mipi_csi_ch0 CONFIG.DPY_LINE_RATE {672}
 ad_ip_parameter mipi_csi_ch0 CONFIG.C_EN_CSI_V2_0 {false}
 ad_ip_parameter mipi_csi_ch0 CONFIG.DPY_EN_REG_IF {true}
 ad_ip_parameter mipi_csi_ch0 CONFIG.CSI_EMB_NON_IMG {false}
@@ -35,7 +41,6 @@ set_property -dict [list \
 ] [get_bd_cells mipi_csi_ch0]
 
 ad_ip_parameter mipi_csi_ch0 CONFIG.SupportLevel {1}
-ad_ip_parameter mipi_csi_ch0 CONFIG.C_HS_SETTLE_NS {143}
 ad_ip_parameter mipi_csi_ch0 CONFIG.C_CSI_FILTER_USERDATATYPE {false}
 
 # dphy_clk_200M generator
@@ -53,21 +58,44 @@ ad_ip_parameter dphy_clk_generator CONFIG.PRIM_IN_FREQ 250.000
 
 # VDMA instance
 
-ad_ip_instance axi_vdma axi_vdma
-ad_ip_parameter axi_vdma CONFIG.C_ADDR_WIDTH {32}
-ad_ip_parameter axi_vdma CONFIG.C_INCLUDE_S2MM {1}
-ad_ip_parameter axi_vdma CONFIG.C_M_AXI_S2MM_DATA_WIDTH {64}
-set_property  CONFIG.c_include_mm2s {0}  [get_bd_cells axi_vdma]
-ad_ip_parameter axi_vdma CONFIG.C_S2MM_MAX_BURST_LENGTH {64}
-ad_ip_parameter axi_vdma CONFIG.C_S_AXIS_S2MM_TDATA_WIDTH {32}
-ad_ip_parameter axi_vdma CONFIG.C_PRMRY_IS_ACLK_ASYNC {1}
-ad_ip_parameter axi_vdma CONFIG.C_USE_S2MM_FSYNC {0}
-ad_ip_parameter axi_vdma CONFIG.C_S2MM_GENLOCK_MODE {2}
-ad_ip_parameter axi_vdma CONFIG.C_INCLUDE_S2MM_DRE {0}
-ad_ip_parameter axi_vdma CONIFG.C_ENABLE_VERT_FLIP {0}
-ad_ip_parameter axi_vdma CONIFG.C_INCLUDE_MM2S {1}
+#ad_ip_instance axi_vdma axi_vdma
+#ad_ip_parameter axi_vdma CONFIG.C_ADDR_WIDTH {32}
+#ad_ip_parameter axi_vdma CONFIG.C_INCLUDE_S2MM {1}
+#ad_ip_parameter axi_vdma CONFIG.C_M_AXI_S2MM_DATA_WIDTH {64}
+#set_property  CONFIG.c_include_mm2s {0}  [get_bd_cells axi_vdma]
+#ad_ip_parameter axi_vdma CONFIG.C_S2MM_MAX_BURST_LENGTH {64}
+#ad_ip_parameter axi_vdma CONFIG.C_S_AXIS_S2MM_TDATA_WIDTH {32}
+#ad_ip_parameter axi_vdma CONFIG.C_PRMRY_IS_ACLK_ASYNC {1}
+#ad_ip_parameter axi_vdma CONFIG.C_USE_S2MM_FSYNC {0}
+#ad_ip_parameter axi_vdma CONFIG.C_S2MM_GENLOCK_MODE {2}
+#ad_ip_parameter axi_vdma CONFIG.C_INCLUDE_S2MM_DRE {0}
+#ad_ip_parameter axi_vdma CONIFG.C_ENABLE_VERT_FLIP {0}
+#ad_ip_parameter axi_vdma CONIFG.C_INCLUDE_MM2S {1}
 #ad_ip_parameter axi_vdma CONFIG.C_M_AXIS_MM2S_TDATA_WIDTH {16}
-ad_ip_parameter axi_vdma CONIFG.C_USE_MM2S_FSYNC {0}
+#ad_ip_parameter axi_vdma CONIFG.C_USE_MM2S_FSYNC {0}
+
+set v_frmbuf_wr_0 [ create_bd_cell -type ip -vlnv xilinx.com:ip:v_frmbuf_wr:2.4 v_frmbuf_wr_0 ]
+set_property -dict [list \
+  CONFIG.HAS_UYVY8 {1} \
+  CONFIG.HAS_YUYV8 {1} \
+  CONFIG.HAS_Y_UV8 {1} \
+  CONFIG.SAMPLES_PER_CLOCK {1} \
+] [get_bd_cells v_frmbuf_wr_0]
+#ad_ip_parameter v_frmbuf_wr_0 CONFIG.AXIMM_DATA_WIDTH {64}
+#ad_ip_parameter v_frmbuf_wr_0 CONFIG.C_M_AXI_MM_VIDEO_DATA_WIDTH {64}
+#ad_ip_parameter v_frmbuf_wr_0 CONFIG.HAS_RGB8 {1}
+#ad_ip_parameter v_frmbuf_wr_0 CONFIG.HAS_UYVY8 {1}
+#ad_ip_parameter v_frmbuf_wr_0 CONFIG.HAS_YUYV8 {1}
+#ad_ip_parameter v_frmbuf_wr_0 CONFIG.HAS_Y_UV8 {1}
+#ad_ip_parameter v_frmbuf_wr_0 CONFIG.MAX_NR_PLANES {2}
+#ad_ip_parameter v_frmbuf_wr_0 CONIFG.SAMPLES_PER_CLK {1}
+
+ad_ip_instance axis_subset_converter axis_subset_cnv
+ad_ip_parameter axis_subset_cnv CONFIG.M_TDATA_NUM_BYTES {3}
+ad_ip_parameter axis_subset_cnv CONFIG.S_TDATA_NUM_BYTES {2}
+ad_ip_parameter axis_subset_cnv CONFIG.TDATA_REMAP {8'b00000000,tdata[15:0]}
+ad_ip_parameter axis_subset_cnv CONFIG.TKEEP_REMAP {1'b0}
+ad_ip_parameter axis_subset_cnv CONFIG.TSTRB_REMAP {1'b0}
 
 # video timing controller instance
 #
@@ -105,7 +133,13 @@ ad_connect mipi_csi_ch0/mipi_phy_if_clk_p mipi_csi_ch0_clk_p
 ad_connect mipi_csi_ch0/mipi_phy_if_data_n mipi_csi_ch0_data_n
 ad_connect mipi_csi_ch0/mipi_phy_if_data_p mipi_csi_ch0_data_p
 
-ad_connect mipi_csi_ch0/video_out axi_vdma/S_AXIS_S2MM
+ad_connect mipi_csi_ch0/video_out axis_subset_cnv/S_AXIS
+ad_connect axis_subset_cnv/aclk $sys_cpu_clk
+ad_connect axis_subset_cnv/aresetn ap_rstn_frmbuf
+ad_connect axis_subset_cnv/M_AXIS v_frmbuf_wr_0/s_axis_video
+ad_connect v_frmbuf_wr_0/ap_clk $sys_cpu_clk
+ad_connect v_frmbuf_wr_0/ap_rst_n ap_rstn_frmbuf
+#ad_connect mipi_csi_ch0/video_out axi_vdma/S_AXIS_S2MM
 
 #ad_connect axi_vdma/M_AXIS_MM2S axi_v_out/video_in
 
@@ -113,18 +147,18 @@ ad_connect dphy_clk_generator/clk_in1 $sys_dma_clk
 ad_connect dphy_clk_generator/resetn $sys_dma_resetn
 
 ad_connect mipi_csi_ch0/video_aclk $sys_cpu_clk
-ad_connect mipi_csi_ch0/video_aresetn $sys_cpu_resetn
+ad_connect mipi_csi_ch0/video_aresetn csirxss_rstn
 ad_connect mipi_csi_ch0/lite_aclk $sys_cpu_clk
 ad_connect mipi_csi_ch0/lite_aresetn $sys_cpu_resetn
 ad_connect mipi_csi_ch0/dphy_clk_200M dphy_clk_generator/clk_out1
 ad_connect mipi_csi_ch0/bg3_pin6_nc bg3_pin6_nc
 
-ad_connect axi_vdma/s_axi_lite_aclk $sys_cpu_clk
-ad_connect axi_vdma/m_axi_s2mm_aclk $sys_cpu_clk
+#ad_connect axi_vdma/s_axi_lite_aclk $sys_cpu_clk
+#ad_connect axi_vdma/m_axi_s2mm_aclk $sys_cpu_clk
 #ad_connect axi_vdma/m_axi_mm2s_aclk $sys_cpu_clk
-ad_connect axi_vdma/s_axis_s2mm_aclk $sys_cpu_clk
+#ad_connect axi_vdma/s_axis_s2mm_aclk $sys_cpu_clk
 #ad_connect axi_vdma/m_axis_mm2s_aclk $sys_cpu_clk
-ad_connect axi_vdma/axi_resetn $sys_cpu_resetn
+#ad_connect axi_vdma/axi_resetn $sys_cpu_resetn
 #
 #ad_connect axi_v_out/vid_active_video sys_ps8/dp_live_video_in_de
 
@@ -132,6 +166,7 @@ ad_connect axi_vdma/axi_resetn $sys_cpu_resetn
 #ad_ip_parameter xlslice_cr_b CONFIG.DIN_WIDTH 16
 #ad_ip_parameter xlslice_cr_b CONFIG.DIN_FROM 15
 #ad_ip_parameter xlslice_cr_b CONFIG.DIN_TO 8
+#
 
 #ad_ip_instance xlslice xlslice_y_b
 #ad_ip_parameter xlslice_y_b CONFIG.DIN_WIDTH 16
@@ -175,15 +210,18 @@ ad_connect axi_vdma/axi_resetn $sys_cpu_resetn
 # Interconnects
 
 ad_cpu_interconnect 0x44A00000  mipi_csi_ch0
-ad_cpu_interconnect 0x44A20000  axi_vdma
+#ad_cpu_interconnect 0x44A20000  axi_vdma
+ad_cpu_interconnect 0x44A20000  v_frmbuf_wr_0
 
-ad_mem_hp1_interconnect $sys_cpu_clk sys_ps7/S_AXI_HP1
-ad_mem_hp1_interconnect $sys_cpu_clk axi_vdma/M_AXI_S2MM
+ad_mem_hp1_interconnect $sys_cpu_clk sys_ps8/S_AXI_HP1
+ad_mem_hp1_interconnect $sys_cpu_clk v_frmbuf_wr_0/m_axi_mm_video
+#ad_mem_hp1_interconnect $sys_cpu_clk axi_vdma/M_AXI_S2MM
 
 # Interrrupts
 
 ad_cpu_interrupt ps-13 mb-12 mipi_csi_ch0/csirxss_csi_irq
-ad_cpu_interrupt ps-11 mb-6 axi_vdma/s2mm_introut
+ad_cpu_interrupt ps-11 mb-6 v_frmbuf_wr_0/interrupt
+#ad_cpu_interrupt ps-11 mb-6 axi_vdma/s2mm_introut
 #ad_cpu_interrupt ps-10 mb-5 axi_vdma/mm2s_introut
 
 #system ID
