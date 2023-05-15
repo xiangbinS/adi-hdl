@@ -38,11 +38,12 @@
 module axi_dmac_transfer #(
   parameter DMA_DATA_WIDTH_SRC = 64,
   parameter DMA_DATA_WIDTH_DEST = 64,
+  parameter DMA_DATA_WIDTH_SG = 64,
   parameter DMA_LENGTH_WIDTH = 24,
   parameter DMA_LENGTH_ALIGN = 3,
   parameter BYTES_PER_BEAT_WIDTH_DEST = $clog2(DMA_DATA_WIDTH_DEST/8),
   parameter BYTES_PER_BEAT_WIDTH_SRC = $clog2(DMA_DATA_WIDTH_SRC/8),
-  parameter BYTES_PER_BEAT_WIDTH_SG = BYTES_PER_BEAT_WIDTH_SRC,
+  parameter BYTES_PER_BEAT_WIDTH_SG = $clog2(DMA_DATA_WIDTH_SG/8),
   parameter DMA_TYPE_DEST = 0,
   parameter DMA_TYPE_SRC = 2,
   parameter DMA_AXI_ADDR_WIDTH = 32,
@@ -51,6 +52,7 @@ module axi_dmac_transfer #(
   parameter ASYNC_CLK_REQ_SRC = 1,
   parameter ASYNC_CLK_SRC_DEST = 1,
   parameter ASYNC_CLK_DEST_REQ = 1,
+  parameter ASYNC_CLK_REQ_SG = 1,
   parameter AXI_SLICE_DEST = 0,
   parameter AXI_SLICE_SRC = 0,
   parameter MAX_BYTES_PER_BURST = 128,
@@ -59,6 +61,7 @@ module axi_dmac_transfer #(
   parameter ID_WIDTH = $clog2(FIFO_SIZE*2),
   parameter AXI_LENGTH_WIDTH_SRC = 8,
   parameter AXI_LENGTH_WIDTH_DEST = 8,
+  parameter AXI_LENGTH_WIDTH_SG = 8,
   parameter ENABLE_DIAGNOSTICS_IF = 0,
   parameter ALLOW_ASYM_MEM = 0,
   parameter CACHE_COHERENT_DEST = 0
@@ -142,14 +145,14 @@ module axi_dmac_transfer #(
   input m_sg_axi_arready,
   output m_sg_axi_arvalid,
   output [DMA_AXI_ADDR_WIDTH-1:0] m_sg_axi_araddr,
-  output [AXI_LENGTH_WIDTH_SRC-1:0] m_sg_axi_arlen,
+  output [AXI_LENGTH_WIDTH_SG-1:0] m_sg_axi_arlen,
   output [2:0] m_sg_axi_arsize,
   output [1:0] m_sg_axi_arburst,
   output [2:0] m_sg_axi_arprot,
   output [3:0] m_sg_axi_arcache,
 
   // Read data and response
-  input [DMA_DATA_WIDTH_SRC-1:0] m_sg_axi_rdata,
+  input [DMA_DATA_WIDTH_SG-1:0] m_sg_axi_rdata,
   input m_sg_axi_rlast,
   output m_sg_axi_rready,
   input m_sg_axi_rvalid,
@@ -299,16 +302,19 @@ module axi_dmac_transfer #(
 
   dmac_sg #(
     .DMA_AXI_ADDR_WIDTH(DMA_AXI_ADDR_WIDTH),
-    .DMA_DATA_WIDTH(DMA_DATA_WIDTH_SRC),
+    .DMA_DATA_WIDTH(DMA_DATA_WIDTH_SG),
     .DMA_LENGTH_WIDTH(DMA_LENGTH_WIDTH),
-    .AXI_LENGTH_WIDTH(AXI_LENGTH_WIDTH_SRC),
+    .AXI_LENGTH_WIDTH(AXI_LENGTH_WIDTH_SG),
     .BYTES_PER_BEAT_WIDTH_DEST(BYTES_PER_BEAT_WIDTH_DEST),
     .BYTES_PER_BEAT_WIDTH_SRC(BYTES_PER_BEAT_WIDTH_SRC),
-    .BYTES_PER_BEAT_WIDTH_SG(BYTES_PER_BEAT_WIDTH_SG)
+    .BYTES_PER_BEAT_WIDTH_SG(BYTES_PER_BEAT_WIDTH_SG),
+    .ASYNC_CLK_REQ_SG(ASYNC_CLK_REQ_SG)
   ) i_dmac_sg (
     .m_axi_aclk(m_sg_axi_aclk),
     .m_axi_aresetn(m_sg_axi_aresetn),
 
+    .req_clk(req_clk),
+    .req_resetn(req_resetn),
     .req_enable(ctrl_enable),
 
     .req_in_valid(dma_sg_in_req_valid),

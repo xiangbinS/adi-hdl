@@ -242,17 +242,19 @@ set_property -dict [list \
 	[ipx::get_user_parameters DMA_AXI_ADDR_WIDTH -of_objects $cc]
 
 foreach {k v} { \
-		"ASYNC_CLK_REQ_SRC" "true" \
-		"ASYNC_CLK_SRC_DEST" "true" \
-		"ASYNC_CLK_DEST_REQ" "true" \
-		"CYCLIC" "false" \
-		"DMA_2D_TRANSFER" "false" \
-		"SYNC_TRANSFER_START" "false" \
-		"AXI_SLICE_SRC" "false" \
-		"AXI_SLICE_DEST" "false" \
-		"DISABLE_DEBUG_REGISTERS" "false" \
-    "ENABLE_DIAGNOSTICS_IF" "false" \
-    "CACHE_COHERENT_DEST" "false" \
+        "ASYNC_CLK_REQ_SRC" "true" \
+        "ASYNC_CLK_SRC_DEST" "true" \
+        "ASYNC_CLK_DEST_REQ" "true" \
+        "ASYNC_CLK_REQ_SG" "true" \
+        "CYCLIC" "false" \
+        "DMA_2D_TRANSFER" "false" \
+        "DMA_SG_TRANSFER" "false" \
+        "SYNC_TRANSFER_START" "false" \
+        "AXI_SLICE_SRC" "false" \
+        "AXI_SLICE_DEST" "false" \
+        "DISABLE_DEBUG_REGISTERS" "false" \
+        "ENABLE_DIAGNOSTICS_IF" "false" \
+        "CACHE_COHERENT_DEST" "false" \
 	} { \
 	set_property -dict [list \
 			"value_format" "bool" \
@@ -265,11 +267,6 @@ foreach {k v} { \
 		] \
 		[ipx::get_hdl_parameters $k -of_objects $cc]
 }
-
-set_property -dict [list \
-	"enablement_tcl_expr" "\$DMA_TYPE_SRC != 0" \
-] \
-[ipx::get_user_parameters SYNC_TRANSFER_START -of_objects $cc]
 
 foreach dir {"SRC" "DEST"} {
 	set_property -dict [list \
@@ -304,6 +301,8 @@ set src_group [ipgui::add_group -name {Source} -component $cc -parent $g \
 		-display_name {Source}]
 set dest_group [ipgui::add_group -name {Destination} -component $cc -parent $g \
 		-display_name {Destination}]
+set sg_group [ipgui::add_group -name {Scatter-Gather} -component $cc -parent $g \
+		-display_name {Scatter-Gather}]
 
 foreach {dir group} [list "SRC" $src_group "DEST" $dest_group] {
 	set p [ipgui::get_guiparamspec -name "DMA_TYPE_${dir}" -component $cc]
@@ -339,6 +338,9 @@ ipgui::move_param -component $cc -order 4 $p -parent $src_group
 set_property -dict [list \
 	"display_name" "Transfer Start Synchronization Support" \
 ] $p
+set_property -dict [list \
+	"enablement_tcl_expr" "\$DMA_TYPE_SRC != 0" \
+] [ipx::get_user_parameters SYNC_TRANSFER_START -of_objects $cc]
 
 set p [ipgui::get_guiparamspec -name "CACHE_COHERENT_DEST" -component $cc]
 ipgui::move_param -component $cc -order 4 $p -parent $dest_group
@@ -351,6 +353,32 @@ set_property -dict [list \
 	"value_tcl_expr" "\$DMA_TYPE_DEST == 0 && \$DMA_AXI_PROTOCOL_DEST == 0" \
 	"enablement_value" "false" \
 ] [ipx::get_user_parameters CACHE_COHERENT_DEST -of_objects $cc]
+
+set p [ipgui::get_guiparamspec -name "DMA_AXI_PROTOCOL_SG" -component $cc]
+ipgui::move_param -component $cc -order 0 $p -parent $sg_group
+set_property -dict [list \
+	"display_name" "AXI Protocol" \
+] $p
+set_property -dict [list \
+	"enablement_tcl_expr" "\$DMA_SG_TRANSFER == true" \
+] [ipx::get_user_parameters DMA_AXI_PROTOCOL_SG -of_objects $cc]
+set_property -dict [list \
+	"value_validation_type" "pairs" \
+	"value_validation_pairs" {"AXI3" "1" "AXI4" "0"} \
+] [ipx::get_user_parameters DMA_AXI_PROTOCOL_SG -of_objects $cc]
+
+set p [ipgui::get_guiparamspec -name "DMA_DATA_WIDTH_SG" -component $cc]
+ipgui::move_param -component $cc -order 1 $p -parent $sg_group
+set_property -dict [list \
+	"display_name" "Bus Width" \
+] $p
+set_property -dict [list \
+	"enablement_tcl_expr" "\$DMA_SG_TRANSFER == true" \
+] [ipx::get_user_parameters DMA_DATA_WIDTH_SG -of_objects $cc]
+set_property -dict [list \
+	"value_validation_type" "list" \
+	"value_validation_list" "16 32 64 128 256 512 1024 2048" \
+] [ipx::get_user_parameters DMA_DATA_WIDTH_SG -of_objects $cc]
 
 set general_group [ipgui::add_group -name "General Configuration" -component $cc \
 		-parent $page0 -display_name "General Configuration"]
@@ -401,6 +429,12 @@ set_property -dict [list \
 	"display_name" "2D Transfer Support" \
 ] $p
 
+set p [ipgui::get_guiparamspec -name "DMA_SG_TRANSFER" -component $cc]
+ipgui::move_param -component $cc -order 2 $p -parent $feature_group
+set_property -dict [list \
+	"display_name" "SG Transfer Support" \
+] $p
+
 set clk_group [ipgui::add_group -name {Clock Domain Configuration} -component $cc \
 		-parent $page0 -display_name {Clock Domain Configuration}]
 
@@ -420,6 +454,12 @@ set p [ipgui::get_guiparamspec -name "ASYNC_CLK_DEST_REQ" -component $cc]
 ipgui::move_param -component $cc -order 2 $p -parent $clk_group
 set_property -dict [list \
 	"display_name" "Destination and Request Clock Asynchronous" \
+] $p
+
+set p [ipgui::get_guiparamspec -name "ASYNC_CLK_REQ_SG" -component $cc]
+ipgui::move_param -component $cc -order 3 $p -parent $clk_group
+set_property -dict [list \
+	"display_name" "Request and Scatter-Gather Clock Asynchronous" \
 ] $p
 
 set dbg_group [ipgui::add_group -name {Debug} -component $cc \

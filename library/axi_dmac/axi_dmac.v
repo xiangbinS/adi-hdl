@@ -40,18 +40,21 @@ module axi_dmac #(
   parameter ID = 0,
   parameter DMA_DATA_WIDTH_SRC = 64,
   parameter DMA_DATA_WIDTH_DEST = 64,
+  parameter DMA_DATA_WIDTH_SG = 64,
   parameter DMA_LENGTH_WIDTH = 24,
   parameter DMA_2D_TRANSFER = 0,
   parameter DMA_SG_TRANSFER = 0,
   parameter ASYNC_CLK_REQ_SRC = 1,
   parameter ASYNC_CLK_SRC_DEST = 1,
   parameter ASYNC_CLK_DEST_REQ = 1,
+  parameter ASYNC_CLK_REQ_SG = 1,
   parameter AXI_SLICE_DEST = 0,
   parameter AXI_SLICE_SRC = 0,
   parameter SYNC_TRANSFER_START = 0,
   parameter CYCLIC = 1,
   parameter DMA_AXI_PROTOCOL_DEST = 0,
   parameter DMA_AXI_PROTOCOL_SRC = 0,
+  parameter DMA_AXI_PROTOCOL_SG = 0,
   parameter DMA_TYPE_DEST = 0,
   parameter DMA_TYPE_SRC = 2,
   parameter DMA_AXI_ADDR_WIDTH = 32,
@@ -59,6 +62,7 @@ module axi_dmac #(
   parameter FIFO_SIZE = 8, // In bursts
   parameter AXI_ID_WIDTH_SRC = 1,
   parameter AXI_ID_WIDTH_DEST = 1,
+  parameter AXI_ID_WIDTH_SG = 1,
   parameter DMA_AXIS_ID_W = 8,
   parameter DMA_AXIS_DEST_W = 4,
   parameter DISABLE_DEBUG_REGISTERS = 0,
@@ -166,28 +170,6 @@ module axi_dmac #(
   input  [AXI_ID_WIDTH_SRC-1:0]            m_src_axi_rid,
   input                                    m_src_axi_rlast,
 
-  // Master AXI interface
-  input                                    m_sg_axi_aclk,
-  input                                    m_sg_axi_aresetn,
-
-  // Read address
-  input                                    m_sg_axi_arready,
-  output                                   m_sg_axi_arvalid,
-  output [DMA_AXI_ADDR_WIDTH-1:0]          m_sg_axi_araddr,
-  output [7-(4*DMA_AXI_PROTOCOL_SRC):0]    m_sg_axi_arlen,
-  output [ 2:0]                            m_sg_axi_arsize,
-  output [ 1:0]                            m_sg_axi_arburst,
-  output [ 2:0]                            m_sg_axi_arprot,
-  output [ 3:0]                            m_sg_axi_arcache,
-
-  // Read data and response
-  input  [DMA_DATA_WIDTH_SRC-1:0]          m_sg_axi_rdata,
-  output                                   m_sg_axi_rready,
-  input                                    m_sg_axi_rvalid,
-  input  [ 1:0]                            m_sg_axi_rresp,
-  input  [AXI_ID_WIDTH_SRC-1:0]            m_sg_axi_rid,
-  input                                    m_sg_axi_rlast,
-
   // Unused write interface
   output                                   m_src_axi_awvalid,
   output [DMA_AXI_ADDR_WIDTH-1:0]          m_src_axi_awaddr,
@@ -209,6 +191,28 @@ module axi_dmac #(
   output [DMA_AXI_PROTOCOL_SRC:0]          m_src_axi_awlock,
   output [AXI_ID_WIDTH_SRC-1:0]            m_src_axi_wid,
   input  [AXI_ID_WIDTH_SRC-1:0]            m_src_axi_bid,
+
+  // Master AXI interface
+  input                                    m_sg_axi_aclk,
+  input                                    m_sg_axi_aresetn,
+
+  // Read address
+  input                                    m_sg_axi_arready,
+  output                                   m_sg_axi_arvalid,
+  output [DMA_AXI_ADDR_WIDTH-1:0]          m_sg_axi_araddr,
+  output [7-(4*DMA_AXI_PROTOCOL_SG):0]     m_sg_axi_arlen,
+  output [ 2:0]                            m_sg_axi_arsize,
+  output [ 1:0]                            m_sg_axi_arburst,
+  output [ 2:0]                            m_sg_axi_arprot,
+  output [ 3:0]                            m_sg_axi_arcache,
+
+  // Read data and response
+  input  [DMA_DATA_WIDTH_SG-1:0]           m_sg_axi_rdata,
+  output                                   m_sg_axi_rready,
+  input                                    m_sg_axi_rvalid,
+  input  [ 1:0]                            m_sg_axi_rresp,
+  input  [AXI_ID_WIDTH_SG-1:0]             m_sg_axi_rid,
+  input                                    m_sg_axi_rlast,
 
   // Slave streaming AXI interface
   input                                    s_axis_aclk,
@@ -280,7 +284,14 @@ module axi_dmac #(
     DMA_DATA_WIDTH_SRC > 32 ? 3 :
     DMA_DATA_WIDTH_SRC > 16 ? 2 :
     DMA_DATA_WIDTH_SRC > 8 ? 1 : 0;
-  localparam BYTES_PER_BEAT_WIDTH_SG = BYTES_PER_BEAT_WIDTH_SRC;
+  localparam BYTES_PER_BEAT_WIDTH_SG = DMA_DATA_WIDTH_SG > 1024 ? 8 :
+    DMA_DATA_WIDTH_SG > 512 ? 7 :
+    DMA_DATA_WIDTH_SG > 256 ? 6 :
+    DMA_DATA_WIDTH_SG > 128 ? 5 :
+    DMA_DATA_WIDTH_SG > 64 ? 4 :
+    DMA_DATA_WIDTH_SG > 32 ? 3 :
+    DMA_DATA_WIDTH_SG > 16 ? 2 :
+    DMA_DATA_WIDTH_SG > 8 ? 1 : 0;
   localparam ID_WIDTH = (FIFO_SIZE) > 64 ? 8 :
     (FIFO_SIZE) > 32 ? 7 :
     (FIFO_SIZE) > 16 ? 6 :
@@ -502,6 +513,7 @@ module axi_dmac #(
   axi_dmac_transfer #(
     .DMA_DATA_WIDTH_SRC(DMA_DATA_WIDTH_SRC),
     .DMA_DATA_WIDTH_DEST(DMA_DATA_WIDTH_DEST),
+    .DMA_DATA_WIDTH_SG(DMA_DATA_WIDTH_SG),
     .DMA_LENGTH_WIDTH(DMA_LENGTH_WIDTH),
     .DMA_LENGTH_ALIGN(DMA_LENGTH_ALIGN),
     .BYTES_PER_BEAT_WIDTH_DEST(BYTES_PER_BEAT_WIDTH_DEST),
@@ -516,6 +528,7 @@ module axi_dmac #(
     .ASYNC_CLK_REQ_SRC(ASYNC_CLK_REQ_SRC),
     .ASYNC_CLK_SRC_DEST(ASYNC_CLK_SRC_DEST),
     .ASYNC_CLK_DEST_REQ(ASYNC_CLK_DEST_REQ),
+    .ASYNC_CLK_REQ_SG(ASYNC_CLK_REQ_SG),
     .AXI_SLICE_DEST(AXI_SLICE_DEST),
     .AXI_SLICE_SRC(AXI_SLICE_SRC),
     .MAX_BYTES_PER_BURST(REAL_MAX_BYTES_PER_BURST),
@@ -523,6 +536,7 @@ module axi_dmac #(
     .ID_WIDTH(ID_WIDTH),
     .AXI_LENGTH_WIDTH_SRC(8-(4*DMA_AXI_PROTOCOL_SRC)),
     .AXI_LENGTH_WIDTH_DEST(8-(4*DMA_AXI_PROTOCOL_DEST)),
+    .AXI_LENGTH_WIDTH_SG(8-(4*DMA_AXI_PROTOCOL_SG)),
     .ENABLE_DIAGNOSTICS_IF(ENABLE_DIAGNOSTICS_IF),
     .ALLOW_ASYM_MEM(ALLOW_ASYM_MEM),
     .CACHE_COHERENT_DEST(CACHE_COHERENT_DEST)
