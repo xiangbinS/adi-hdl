@@ -381,9 +381,9 @@ module up_dac_channel #(
       up_rack_int <= up_rreq_s;
       if (up_rreq_s == 1'b1) begin
         case (up_raddr[3:0])
-          4'h0: up_rdata_int <= { 16'd0, up_dac_dds_scale_1};
+          4'h0: up_rdata_int <= { 10'd0, dds_phase_w, up_dac_dds_scale_1};
           4'h1: up_rdata_int <= { up_dac_dds_init_1, up_dac_dds_incr_1};
-          4'h2: up_rdata_int <= { 10'd0, dds_phase_w, up_dac_dds_scale_2};
+          4'h2: up_rdata_int <= { 16'd0, up_dac_dds_scale_2};
           4'h3: up_rdata_int <= { up_dac_dds_init_2, up_dac_dds_incr_2};
           4'h4: up_rdata_int <= { up_dac_pat_data_2, up_dac_pat_data_1};
           4'h5: up_rdata_int <= { 29'd0, up_dac_iqcor_enb, up_dac_lb_enb, up_dac_pn_enb};
@@ -485,7 +485,7 @@ module up_dac_channel #(
 
 generate
 if (DDS_PHASE_DW > 16) begin
-  localparam  DDS_EXT_DW = DDS_PHASE_DW > 16 ? DDS_PHASE_DW - 16 - 1: 0;
+  localparam  DDS_EXT_DW = DDS_PHASE_DW - 16 - 1;
   assign dac_dds_init_1 = {dac_dds_init_1_extend[DDS_EXT_DW:0], dac_dds_init_1_s};
   assign dac_dds_incr_1 = {dac_dds_incr_1_extend[DDS_EXT_DW:0], dac_dds_incr_1_s};
   assign dac_dds_init_2 = {dac_dds_init_2_extend[DDS_EXT_DW:0], dac_dds_init_2_s};
