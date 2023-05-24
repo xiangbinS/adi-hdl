@@ -1,19 +1,22 @@
-FMC_pin	FMC_port	Schematic_name	System_top_name		IOSTANDARD    Termination
+FMC_pin FMC_port  Schematic_name  System_top_name   IOSTANDARD    Termination
 
 # adaq4224
-G06		LA00_CC_P	SCLK_FMC		adaq4224_spi_sclk	LVCMOS25      #N/A
-G07		LA00_CC_N	CS_FMC			adaq4224_spi_cs		LVCMOS25      #N/A
-C11		LA06_N		SDI_FMC			adaq4224_spi_sdo	LVCMOS25      #N/A
-H07		LA02_P	   	SDO0_FMC		adaq4224_spi_sdi[0]	LVCMOS25      #N/A
-H08		LA02_N		SDO1_FMC		adaq4224_spi_sdi[1]	LVCMOS25      #N/A
-G09		LA03_P		SDO2_FMC		adaq4224_spi_sdi[2]	LVCMOS25      #N/A
-G10		LA03_N		SDO3_FMC		adaq4224_spi_sdi[3]	LVCMOS25      #N/A
+G06   LA00_CC_P   SCLK_FMC    adaq4224_spi_sclk LVCMOS25      #N/A
+G07   LA00_CC_N   CS_FMC      adaq4224_spi_cs   LVCMOS25      #N/A
+C11   LA06_N      SDI_FMC     adaq4224_spi_sdo  LVCMOS25      #N/A
+H07   LA02_P      SDO0_FMC    adaq4224_spi_sdi[0] LVCMOS25      #N/A
+H08   LA02_N      SDO1_FMC    adaq4224_spi_sdi[1] LVCMOS25      #N/A
+G09   LA03_P      SDO2_FMC    adaq4224_spi_sdi[2] LVCMOS25      #N/A
+G10   LA03_N      SDO3_FMC    adaq4224_spi_sdi[3] LVCMOS25      #N/A
 
-D20		LA17_P_CC	SCK_OUT_FMC		adaq4224_echo_sclk	LVCMOS25      #N/A
-D09		LA01_CC_N	RESET_FMC		adaq4224_resetn		LVCMOS25      #N/A
-D08		LA01_CC_P	CNV_FMC			adaq4224_cnv		LVCMOS25      #N/A
-C22		LA18_CC_P	BUSY_FMC		adaq4224_busy		LVCMOS25      #N/A
-H04		CLK0_M2C_P	CLK				adaq4224_ext_clk	LVCMOS25      #N/A
+D20   LA17_P_CC   SCK_OUT_FMC adaq4224_echo_sclk  LVCMOS25      #N/A
+D09   LA01_CC_N   RESET_FMC   adaq4224_resetn     LVCMOS25      #N/A
+D08   LA01_CC_P   CNV_FMC     adaq4224_cnv        LVCMOS25      #N/A
+C22   LA18_CC_P   BUSY_FMC    adaq4224_busy       LVCMOS25      #N/A
+H04   CLK0_M2C_P  CLK         adaq4224_ext_clk    LVCMOS25      #N/A
 
-H10		LA04_P   	A0_FMC			adaq4224_pgia_gain_ctrl[0]	LVCMOS25      #N/A
-H11		LA04_N    	A1_FMC			adaq4224_pgia_gain_ctrl[1]	LVCMOS25      #N/A
+H10   LA04_P      A0_FMC      adaq4224_pgia_gain_ctrl[0]  LVCMOS25      #N/A
+H11   LA04_N      A1_FMC      adaq4224_pgia_gain_ctrl[1]  LVCMOS25      #N/A
+
+D11   LA05_P      TSCL  iic_tscl  LVCMOS25      #N/A
+D12   LA05_N_     TSDA  iic_tsda     LVCMOS25      #N/A

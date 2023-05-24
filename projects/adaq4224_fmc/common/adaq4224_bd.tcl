@@ -30,6 +30,8 @@ create_bd_port -dir I adaq4224_busy
 create_bd_port -dir O adaq4224_cnv
 create_bd_port -dir I adaq4224_ext_clk
 
+create_bd_intf_port -mode Master -vlnv xilinx.com:interface:iic_rtl:1.0 iic_temp
+
 ## To support the 2MSPS (SCLK == 80 MHz), set the spi clock to 160 MHz
 
 ad_ip_instance axi_clkgen spi_clkgen
@@ -193,19 +195,26 @@ ad_connect  $hier_spi_engine/${hier_spi_engine}_execution/sdi adaq4224_spi_sdi
 
 ad_connect  axi_adaq4224_dma/s_axis data_reorder/m_axis
 
+ad_ip_instance axi_iic axi_iic_temp
+
+ad_connect  iic_temp       axi_iic_temp/iic
+
 # AXI memory mapped address space
 
 ad_cpu_interconnect 0x44a00000 $hier_spi_engine/${hier_spi_engine}_axi_regmap
 ad_cpu_interconnect 0x44b00000 cnv_generator
 ad_cpu_interconnect 0x44a30000 axi_adaq4224_dma
 ad_cpu_interconnect 0x44a70000 spi_clkgen
+ad_cpu_interconnect 0x44c00000 axi_iic_temp
 
 # interrupts
 
 ad_cpu_interrupt "ps-13" "mb-13" axi_adaq4224_dma/irq
 ad_cpu_interrupt "ps-12" "mb-12" $hier_spi_engine/irq
+ad_cpu_interrupt "ps-10" "mb-10" axi_iic_temp/iic2intc_irpt
 
 # interconnect to memory interface
 
 ad_mem_hp2_interconnect sys_cpu_clk sys_ps7/S_AXI_HP2
 ad_mem_hp2_interconnect sys_cpu_clk axi_adaq4224_dma/m_dest_axi
+

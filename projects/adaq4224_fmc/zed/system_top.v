@@ -96,6 +96,10 @@ module system_top #(
   output          adaq4224_cnv,
   input           adaq4224_busy,
   inout           adaq4224_resetn,
+  inout           iic_tscl,
+  inout           iic_tsda,
+  inout           adaq4224_rst,
+  inout           adaq4224_en,
   inout   [ 1:0]  adaq4224_pgia_gain_ctrl
 );
 
@@ -136,14 +140,15 @@ module system_top #(
     .clk (adaq4224_echo_sclk_s));
 
   ad_iobuf #(
-    .DATA_WIDTH(3)
+    .DATA_WIDTH(5)
   ) i_adaq4224_gpio_iobuf (
-    .dio_t(gpio_t[34:32]),
-    .dio_i(gpio_o[34:32]),
-    .dio_o(gpio_i[34:32]),
-    .dio_p ({adaq4224_resetn,            // 34 
-             adaq4224_pgia_gain_ctrl})); // 32:33
-
+    .dio_t(gpio_t[36:32]),
+    .dio_i(gpio_o[36:32]),
+    .dio_o(gpio_i[36:32]),
+    .dio_p ({ adaq4224_pgia_gain_ctrl,  // 36:35
+              adaq4224_en,              // 34
+              adaq4224_rst,             // 33
+              adaq4224_resetn}));       // 32
 
   ad_iobuf #(
     .DATA_WIDTH(32)
@@ -204,6 +209,8 @@ module system_top #(
     .i2s_mclk (i2s_mclk),
     .i2s_sdata_in (i2s_sdata_in),
     .i2s_sdata_out (i2s_sdata_out),
+    .iic_temp_scl_io (iic_tscl),
+    .iic_temp_sda_io (iic_tsda),
     .iic_fmc_scl_io (iic_scl),
     .iic_fmc_sda_io (iic_sda),
     .iic_mux_scl_i (iic_mux_scl_i_s),
