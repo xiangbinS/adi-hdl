@@ -6,3 +6,17 @@ Here are some pointers to help you:
   * Project Doc: https://wiki.analog.com/resources/eval/user-guides/dc2677a
   * HDL Doc: https://wiki.analog.com/resources/fpga/docs/axi_ltc235x
   * Linux Drivers:
+
+Project Parameters
+LVDS_CMOS_N:
+  * 0 - CMOS (default)
+  * 1 - LVDS
+LTC235X_FAMILY:
+  * 0 = 2358-18 (default)
+  * 1 = 2358-16
+  * 2 = 2357-18
+  * 3 = 2357-16
+  * 4 = 2353-18
+  * 5 = 2353-16
+
+How to build: e.g, "make LVDS_CMOS_N=0 LTC235X_FAMILY=0"
