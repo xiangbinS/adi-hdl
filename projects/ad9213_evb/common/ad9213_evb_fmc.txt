@@ -4,10 +4,11 @@ FMC_pin  FMC_port         Schematic_name           System_top_name    IOSTANDARD
 
 D4       GBTCLK0_M2C_P    FMC_P1_GBTCLK0M2C_P      rx_ref_clk_p         #N/A         #N/A
 D5       GBTCLK0_M2C_N    FMC_P1_GBTCLK0M2C_N      rx_ref_clk_n         #N/A         #N/A
-D4       GBTCLK2_M2C_P    FMC_P1_GBTCLK2M2C_P      rx_ref_clk_replica_p #N/A         #N/A
-D5       GBTCLK2_M2C_N    FMC_P1_GBTCLK2M2C_N      rx_ref_clk_replica_n #N/A         #N/A
-L8       GBTCLK3_M2C_P    FMC_P1_GBTCLK3M2C_P      glbl_clk_0_p         #N/A         #N/A
-L9       GBTCLK3_M2C_N    FMC_P1_GBTCLK3M2C_N      glbl_clk_0_n         #N/A         #N/A
+L8       GBTCLK3_M2C_P    FMC_P1_GBTCLK3M2C_P      rx_ref_clk_replica_p #N/A         #N/A
+L9       GBTCLK3_M2C_N    FMC_P1_GBTCLK3M2C_N      rx_ref_clk_replica_n #N/A         #N/A
+
+L12      GBTCLK2_M2C_P    FMC_P1_GBTCLK2M2C_P      glbl_clk_0_p         #N/A         #N/A
+L13      GBTCLK2_M2C_N    FMC_P1_GBTCLK2M2C_N      glbl_clk_0_n         #N/A         #N/A
 
 H7       LA02_P           LA02_P                   rx_sysref_p          LVDS         DIFF_TERM_ADV TERM_100
 H8       LA02_N           LA02_N                   rx_sysref_n          LVDS         DIFF_TERM_ADV TERM_100

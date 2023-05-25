@@ -3,11 +3,11 @@
 
 set_property -dict {PACKAGE_PIN AK38} [get_ports rx_ref_clk_p]                                              ; ## D4   FMC_GBT0_0_P         MGTREFCLK0P_121
 set_property -dict {PACKAGE_PIN AK39} [get_ports rx_ref_clk_n]                                              ; ## D5   FMC_GBT0_0_N         MGTREFCLK0N_121
-set_property -dict {PACKAGE_PIN V38}  [get_ports rx_ref_clk_replica_p]                                      ; ## D4   FMC_GBT0_1_P         MGTREFCLK0P_126
-set_property -dict {PACKAGE_PIN V39}  [get_ports rx_ref_clk_replica_n]                                      ; ## D5   FMC_GBT0_1_N         MGTREFCLK0N_126
+set_property -dict {PACKAGE_PIN AB38} [get_ports rx_ref_clk_replica_p]                                      ; ## L8   FMC_GBTCLK3_M2C_C_P  MGTREFCLK0P_125
+set_property -dict {PACKAGE_PIN AB39} [get_ports rx_ref_clk_replica_n]                                      ; ## L9   FMC_GBTCLK3_M2C_C_N  MGTREFCLK0N_125
 
-set_property -dict {PACKAGE_PIN AB38} [get_ports glbl_clk_0_p]                                              ; ## L8   FMC_GBTCLK3_M2C_C_P  MGTREFCLK0P_125
-set_property -dict {PACKAGE_PIN AB39} [get_ports glbl_clk_0_n]                                              ; ## L9   FMC_GBTCLK3_M2C_C_N  MGTREFCLK0N_125
+set_property -dict {PACKAGE_PIN AF38} [get_ports glbl_clk_0_p]                                              ; ## L12  FMC_GBTCLK2_M2C_C_P  MGTREFCLK0P_122
+set_property -dict {PACKAGE_PIN AF39} [get_ports glbl_clk_0_n]                                              ; ## L13  FMC_GBTCLK2_M2C_C_P  MGTREFCLK0N_122
 
 set_property -dict {PACKAGE_PIN AJ32 IOSTANDARD LVDS DIFF_TERM_ADV TERM_100} [get_ports rx_sysref_p]        ; ## H7   FMC_LA02_P           IO_L14P_T2L_N2_GC_43
 set_property -dict {PACKAGE_PIN AK32 IOSTANDARD LVDS DIFF_TERM_ADV TERM_100} [get_ports rx_sysref_n]        ; ## H8   FMC_LA02_N           IO_L14N_T2L_N3_GC_43
