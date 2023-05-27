@@ -1,7 +1,7 @@
 source $ad_hdl_dir/library/spi_engine/scripts/spi_engine.tcl
 
 # system level parameters
-set NUM_OF_SDI  $ad_project_params(NUM_OF_SDI)
+set NUM_OF_SDI  [expr $ad_project_params(NUM_OF_SDI) * 2]
 set CAPTURE_ZONE $ad_project_params(CAPTURE_ZONE)
 set CLK_MODE $ad_project_params(CLK_MODE)
 set DDR_EN $ad_project_params(DDR_EN)

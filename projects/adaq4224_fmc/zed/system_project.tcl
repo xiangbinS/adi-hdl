@@ -1,7 +1,6 @@
 source ../../../scripts/adi_env.tcl
 source $ad_hdl_dir/projects/scripts/adi_project_xilinx.tcl
 source $ad_hdl_dir/projects/scripts/adi_board.tcl
-
 # The get_env_param procedure retrieves parameter value from the environment if exists,
 # other case returns the default value specified in its second parameter field.
 #
@@ -20,12 +19,12 @@ source $ad_hdl_dir/projects/scripts/adi_board.tcl
 #
 # NUM_OF_SDI : the number of MOSI lines of the SPI interface
 #
-#    1 - Interleaved mode
-#    2 - 1 lane per channel
-#    4 - 2 lanes per channel
+#    1 - 1 lane per channel
+#    2 - 2 lanes per channel
+#    4 - 4 lanes per channel
 #
 # CAPTURE_ZONE : the capture zone of the next sample
-# There are two capture zones for AD4624-30:
+# There are two capture zones for AD4030-24
 #
 #   1 - from negative edge of the BUSY line until the next CNV positive edge -20ns
 #   2 - from the next consecutive CNV positive edge +20ns until the second next
@@ -39,8 +38,18 @@ source $ad_hdl_dir/projects/scripts/adi_board.tcl
 #
 # Example:
 #
-#   make NUM_OF_SDI=2 CAPTURE_ZONE=2
-#
+#   make CLK_MODE=0 NUM_OF_SDI=1 CAPTURE_ZONE=2 DDR_EN=0
+#   make CLK_MODE=0 NUM_OF_SDI=2 CAPTURE_ZONE=2 DDR_EN=0
+#   make CLK_MODE=0 NUM_OF_SDI=4 CAPTURE_ZONE=2 DDR_EN=0
+#   make CLK_MODE=1 NUM_OF_SDI=1 CAPTURE_ZONE=2 DDR_EN=0
+#   make CLK_MODE=1 NUM_OF_SDI=2 CAPTURE_ZONE=2 DDR_EN=0
+#   make CLK_MODE=1 NUM_OF_SDI=4 CAPTURE_ZONE=2 DDR_EN=0
+#   make CLK_MODE=0 NUM_OF_SDI=1 CAPTURE_ZONE=2 DDR_EN=1
+#   make CLK_MODE=0 NUM_OF_SDI=2 CAPTURE_ZONE=2 DDR_EN=1
+#   make CLK_MODE=0 NUM_OF_SDI=4 CAPTURE_ZONE=2 DDR_EN=1
+#   make CLK_MODE=1 NUM_OF_SDI=1 CAPTURE_ZONE=2 DDR_EN=1
+#   make CLK_MODE=1 NUM_OF_SDI=2 CAPTURE_ZONE=2 DDR_EN=1
+#   make CLK_MODE=1 NUM_OF_SDI=4 CAPTURE_ZONE=2 DDR_EN=1
 
 adi_project adaq4224_fmc_zed 0 [list \
   CLK_MODE     [get_env_param CLK_MODE      0] \
@@ -54,24 +63,5 @@ adi_project_files adaq4224_fmc_zed [list \
   "$ad_hdl_dir/projects/common/zed/zed_system_constr.xdc" \
   "system_constr.xdc" \
   "system_top.v" ]
-
-switch [get_env_param NUM_OF_SDI 4] {
-  1 {
-    adi_project_files adaq4224_fmc_zed [list \
-      "system_constr_1sdi.xdc" ]
-  }
-  2 {
-    adi_project_files adaq4224_fmc_zed [list \
-      "system_constr_2sdi.xdc" ]
-  }
-  4 {
-    adi_project_files adaq4224_fmc_zed [list \
-      "system_constr_4sdi.xdc" ]
-  }
-  default {
-    adi_project_files adaq4224_fmc_zed [list \
-      "system_constr_2sdi.xdc" ]
-  }
-}
 
 adi_project_run adaq4224_fmc_zed

@@ -86,7 +86,7 @@ module system_top #(
 
   // adaq4224 SPI configuration interface
 
-  input [NUM_OF_SDI-1:0]  adaq4224_spi_sdi,
+  input   [3:0]   adaq4224_spi_sdi,
   output          adaq4224_spi_sdo,
   output          adaq4224_spi_sclk,
   output          adaq4224_spi_cs,
@@ -116,10 +116,12 @@ module system_top #(
   wire    [ 1:0]  iic_mux_sda_o_s;
   wire            iic_mux_sda_t_s;
   wire            adaq4224_echo_sclk_s;
+  wire    [ 7-NUM_OF_SDI:0]  sdi_nc;
+  assign sni_nc = 0;
 
   // instantiations
 
-  assign gpio_i[63:35] = 31'b0;
+  assign gpio_i[63:37] = 26'b0;
 
   ad_data_clk #(
     .SINGLE_ENDED (1)
@@ -238,7 +240,7 @@ module system_top #(
     .spi1_sdo_i (1'b0),
     .spi1_sdo_o (),
     .adaq4224_spi_sdo (adaq4224_spi_sdo),
-    .adaq4224_spi_sdi (adaq4224_spi_sdi),
+    .adaq4224_spi_sdi ({sdi_nc,adaq4224_spi_sdi}),
     .adaq4224_spi_cs (adaq4224_spi_cs),
     .adaq4224_spi_sclk (adaq4224_spi_sclk),
     .adaq4224_echo_sclk (adaq4224_echo_sclk_s),
