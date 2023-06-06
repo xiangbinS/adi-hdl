@@ -1,0 +1,49 @@
+From 37e62c3a028fd84707ee03418fc5c9eeec144929 Mon Sep 17 00:00:00 2001
+From: Srinivas Neeli <srinivas.neeli@xilinx.com>
+Date: Wed, 15 Sep 2021 18:35:32 +0530
+Subject: [PATCH 1/2] net: xilinx: Add RXCsum support
+
+Added Rxcsum support for XXV etherenet driver.
+
+Signed-off-by: Srinivas Neeli <srinivas.neeli@xilinx.com>
+---
+ drivers/net/ethernet/xilinx/xilinx_axienet_main.c | 11 +++++++++++
+ 1 file changed, 11 insertions(+)
+
+diff --git a/drivers/net/ethernet/xilinx/xilinx_axienet_main.c b/drivers/net/ethernet/xilinx/xilinx_axienet_main.c
+index b2890bb94803..9406bfc95df3 100644
+--- a/drivers/net/ethernet/xilinx/xilinx_axienet_main.c
++++ b/drivers/net/ethernet/xilinx/xilinx_axienet_main.c
+@@ -1589,6 +1589,15 @@ static int axienet_recv(struct net_device *ndev, int budget,
+ 			    (csumstatus == XAE_IP_UDP_CSUM_VALIDATED)) {
+ 				skb->ip_summed = CHECKSUM_UNNECESSARY;
+ 			}
++		} else if (lp->features & XAE_FEATURE_FULL_RX_CSUM &&
++			   (lp->axienet_config->mactype == XAXIENET_10G_25G) &&
++			   !lp->eth_hasnobuf) {
++			    csumstatus = (cur_p->app4 & 0x7);
++			    if ((csumstatus == XAE_IP_TCP_CSUM_VALIDATED) ||
++			       (csumstatus == XAE_IP_UDP_CSUM_VALIDATED)) {
++				skb->ip_summed = CHECKSUM_UNNECESSARY;
++			    }
++
+ 		} else if ((lp->features & XAE_FEATURE_PARTIAL_RX_CSUM) != 0 &&
+ 			   skb->protocol == htons(ETH_P_IP) &&
+ 			   skb->len > 64 && !lp->eth_hasnobuf &&
+@@ -3338,11 +3347,13 @@ static int axienet_probe(struct platform_device *pdev)
+ 			lp->csum_offload_on_rx_path =
+ 				XAE_FEATURE_PARTIAL_RX_CSUM;
+ 			lp->features |= XAE_FEATURE_PARTIAL_RX_CSUM;
++			ndev->features |= NETIF_F_RXCSUM;
+ 			break;
+ 		case 2:
+ 			lp->csum_offload_on_rx_path =
+ 				XAE_FEATURE_FULL_RX_CSUM;
+ 			lp->features |= XAE_FEATURE_FULL_RX_CSUM;
++			ndev->features |= NETIF_F_RXCSUM;
+ 			break;
+ 		default:
+ 			lp->csum_offload_on_rx_path = XAE_NO_CSUM_OFFLOAD;
+-- 
+2.17.1
+

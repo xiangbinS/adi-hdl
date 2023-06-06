@@ -1,0 +1,35 @@
+From 472a74f6e6bdf554b884b01f1a879ca51f2ed3f1 Mon Sep 17 00:00:00 2001
+From: Srinivas Neeli <srinivas.neeli@xilinx.com>
+Date: Fri, 17 Sep 2021 15:24:17 +0530
+Subject: [PATCH 2/2] net:xilinx: Add Txcsum offload support for xxv ethernet
+
+Add TXCsum offload support for xxv ethernet driver.
+
+Signed-off-by: Srinivas Neeli <srinivas.neeli@xilinx.com>
+---
+ drivers/net/ethernet/xilinx/xilinx_axienet_main.c | 9 +++++++++
+ 1 file changed, 9 insertions(+)
+
+diff --git a/drivers/net/ethernet/xilinx/xilinx_axienet_main.c b/drivers/net/ethernet/xilinx/xilinx_axienet_main.c
+index 06b651f901aa..6d21cc1dd4f4 100644
+--- a/drivers/net/ethernet/xilinx/xilinx_axienet_main.c
++++ b/drivers/net/ethernet/xilinx/xilinx_axienet_main.c
+@@ -1376,6 +1376,15 @@ int axienet_queue_xmit(struct sk_buff *skb,
+ 			cur_p->app0 |= 1;
+ 			cur_p->app1 = (csum_start_off << 16) | csum_index_off;
+ 		}
++	} else if (skb->ip_summed == CHECKSUM_PARTIAL && !lp->eth_hasnobuf &&
++			(lp->axienet_config->mactype == XAXIENET_10G_25G)) {
++		if (lp->features & XAE_FEATURE_PARTIAL_TX_CSUM) {
++			csum_start_off = skb_transport_offset(skb);
++			csum_index_off = csum_start_off + skb->csum_offset;
++			/* Tx Partial Checksum Offload Enabled */
++			cur_p->app1 |= 1 << 10;
++			cur_p->app3 = csum_start_off | (csum_index_off << 16);
++		}
+ 	} else if (skb->ip_summed == CHECKSUM_UNNECESSARY &&
+ 		   !lp->eth_hasnobuf &&
+ 		   (lp->axienet_config->mactype == XAXIENET_1G)) {
+-- 
+2.17.1
+

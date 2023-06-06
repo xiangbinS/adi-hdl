@@ -1,0 +1,36 @@
+/include/ "system-conf.dtsi"
+/ {
+axi {
+	ethernet@ff0e0000 {
+		phy-handle = <&ps>;
+		ps:ethernet-phy@c {
+			reg = <0xc>;
+			ti,rx-internal-delay = <0x8>;
+			ti,tx-internal-delay = <0xa>;
+			ti,fifo-depth = <0x1>;
+			ti,dp83867-rxctrl-strap-quirk;
+		};
+	};
+};
+amba_pl@0 {
+	axi_dma_hier_axi_mcdma_0: axi_mcdma@b0000000 {
+		compatible = "xlnx,eth-dma";
+		xlnx,addrwidth = [20];
+	};
+	ethernet@b0020000 {
+		axistream-connected = <&axi_dma_hier_axi_mcdma_0>;
+		axistream-control-connected = <&axi_dma_hier_axi_mcdma_0>;
+		clock-names = "rx_core_clk", "dclk", "s_axi_aclk", "s_axi_lite_aclk", "m_axi_sg_aclk", "m_axi_mm2s_aclk", "m_axi_s2mm_aclk";
+		clocks = <&misc_clk_1>, <&zynqmp_clk 72>, <&zynqmp_clk 71>, <&misc_clk_0>, <&misc_clk_0>, <&misc_clk_0>, <&misc_clk_0>; 
+		interrupt-names = "mm2s_ch1_introut", "mm2s_ch2_introut", "mm2s_ch3_introut", "mm2s_ch4_introut", "mm2s_ch5_introut", "mm2s_ch6_introut", "mm2s_ch7_introut", "mm2s_ch8_introut", "mm2s_ch9_introut", "mm2s_ch10_introut", "mm2s_ch11_introut", "mm2s_ch12_introut", "mm2s_ch13_introut", "mm2s_ch14_introut", "mm2s_ch15_introut", "mm2s_ch16_introut", "s2mm_ch1_introut", "s2mm_ch2_introut", "s2mm_ch3_introut", "s2mm_ch4_introut", "s2mm_ch5_introut", "s2mm_ch6_introut", "s2mm_ch7_introut", "s2mm_ch8_introut", "s2mm_ch9_introut", "s2mm_ch10_introut", "s2mm_ch11_introut", "s2mm_ch12_introut", "s2mm_ch13_introut", "s2mm_ch14_introut", "s2mm_ch15_introut", "s2mm_ch16_introut";
+		interrupt-parent = <&gic>;
+		interrupts = <0x0 0x59 0x4 0x0 0x59 0x4 0x0 0x59 0x4 0x0 0x59 0x4 0x0 0x59 0x4 0x0 0x59 0x4 0x0 0x59 0x4 0x0 0x59 0x4 0x0 0x59 0x4 0x0 0x59 0x4 0x0 0x59 0x4 0x0 0x59 0x4 0x0 0x59 0x4 0x0 0x59 0x4 0x0 0x59 0x4 0x0 0x59 0x4 0x0 0x5a 0x4 0x0 0x5a 0x4 0x0 0x5a 0x4 0x0 0x5a 0x4 0x0 0x5b 0x4 0x0 0x5b 0x4 0x0 0x5b 0x4 0x0 0x5b 0x4 0x0 0x5c 0x4 0x0 0x5c 0x4 0x0 0x5c 0x4 0x0 0x5c 0x4 0x0 0x5d 0x4 0x0 0x5d 0x4 0x0 0x5d 0x4 0x0 0x5d 0x4>;
+		xlnx,channel-ids = "1", "2", "3", "4", "5", "6", "7", "8", "9", "a", "b", "c", "d", "e", "f", "10";
+		xlnx,include-dre;
+		xlnx,num-queues = [00 10];
+		xlnx,rxmem = <0x40000>;
+		xlnx,txcsum = <0x1>;
+		xlnx,rxcsum = <0x2>;
+	};
+};
+};
