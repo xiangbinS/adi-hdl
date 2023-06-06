@@ -1,0 +1,134 @@
+From 41dfa3522e6091fb74e2af85a9f67abfd5e0be99 Mon Sep 17 00:00:00 2001
+From: Sarath Babu Naidu Gaddam <sarath.babu.naidu.gaddam@xilinx.com>
+Date: Mon, 20 Jun 2022 07:42:07 -0600
+Subject: [ LINUX PATCH] ptp: xilinx: Acquire ptp device information
+ dynamically
+
+xilinx ethernet driver reads the phc_index of ptp clock using
+ethernet dts node. ptp device node is embedded into the ethernet
+node.
+
+Signed-off-by: Sarath Babu Naidu Gaddam <sarath.babu.naidu.gaddam@xilinx.com>
+---
+ .../net/ethernet/xilinx/xilinx_axienet_main.c | 26 ++++++++++++++++++-
+ drivers/ptp/ptp_xilinx.c                      | 15 ++---------
+ include/linux/ptp/ptp_xilinx.h                | 23 ++++++++++++++++
+ 3 files changed, 50 insertions(+), 14 deletions(-)
+ create mode 100644 include/linux/ptp/ptp_xilinx.h
+
+diff --git a/drivers/net/ethernet/xilinx/xilinx_axienet_main.c b/drivers/net/ethernet/xilinx/xilinx_axienet_main.c
+index 3742284ece9e..da69f890acfc 100644
+--- a/drivers/net/ethernet/xilinx/xilinx_axienet_main.c
++++ b/drivers/net/ethernet/xilinx/xilinx_axienet_main.c
+@@ -45,6 +45,7 @@
+ #include <net/sock.h>
+ #include <linux/xilinx_phy.h>
+ #include <linux/clk.h>
++#include <linux/ptp/ptp_xilinx.h>
+ 
+ #include "xilinx_axienet.h"
+ 
+@@ -2590,7 +2591,30 @@ static int axienet_ethtools_get_ts_info(struct net_device *ndev,
+ 			(1 << HWTSTAMP_TX_ONESTEP_P2P);
+ 	info->rx_filters = (1 << HWTSTAMP_FILTER_NONE) |
+ 			   (1 << HWTSTAMP_FILTER_ALL);
+-	info->phc_index = lp->phc_index;
++
++	if (lp->axienet_config->mactype == XAXIENET_MRMAC ||
++		lp->axienet_config->mactype == XAXIENET_10G_25G) {
++		struct device_node *np = NULL;
++		struct xlnx_ptp_timer *timer = NULL;
++		struct platform_device *ptpnode = NULL;
++
++		np = of_parse_phandle(lp->dev->of_node, "xlnx,ptp_node", 0);
++
++		if (np)
++			ptpnode = of_find_device_by_node(np);
++
++		if (ptpnode)
++			timer = platform_get_drvdata(ptpnode);
++
++		if (timer) {
++			info->phc_index = timer->phc_index;
++
++		} else if (!timer) {
++			netdev_warn(ndev, "phc_index property is obsolete, please use xlnx,ptp_node\n");
++			info->phc_index = lp->phc_index;
++		}
++		of_node_put(np);
++	}
+ 
+ 	return 0;
+ }
+diff --git a/drivers/ptp/ptp_xilinx.c b/drivers/ptp/ptp_xilinx.c
+index d9c7b676680b..f68a5b938b53 100644
+--- a/drivers/ptp/ptp_xilinx.c
++++ b/drivers/ptp/ptp_xilinx.c
+@@ -17,6 +17,7 @@
+ #include <linux/ptp_clock_kernel.h>
+ #include <linux/platform_device.h>
+ #include <linux/of_irq.h>
++#include <linux/ptp/ptp_xilinx.h>
+ 
+ /* Register offset definitions */
+ #define XPTPTIMER_TOD_CONFIG_OFFSET	0x0000
+@@ -72,19 +73,6 @@
+ #define XPTPTIMER_PERIOD_SHIFT		48
+ 
+ #define PPM_FRACTION	16
+-struct xlnx_ptp_timer {
+-	struct		device *dev;
+-	void __iomem		*baseaddr;
+-	struct ptp_clock	*ptp_clock;
+-	struct ptp_clock_info	ptp_clock_info;
+-	spinlock_t		reg_lock; /* For reg access */
+-	u64			incr;
+-	s64			timeoffset;
+-	s32			static_delay;
+-	int                     irq;
+-	int                     extts_enable;
+-
+-};
+ 
+ /* I/O accessors */
+ static inline u32 xlnx_ptp_ior(struct xlnx_ptp_timer *timer, off_t reg)
+@@ -486,6 +474,7 @@ static int xlnx_ptp_timer_probe(struct platform_device *pdev)
+ 
+ 	platform_set_drvdata(pdev, timer);
+ 
++	timer->phc_index = ptp_clock_index(timer->ptp_clock);
+ 	dev_info(&pdev->dev, "Xilinx PTP timer driver probed\n");
+ 
+ 	return 0;
+diff --git a/include/linux/ptp/ptp_xilinx.h b/include/linux/ptp/ptp_xilinx.h
+new file mode 100644
+index 000000000000..2e31f3bfa3c3
+--- /dev/null
++++ b/include/linux/ptp/ptp_xilinx.h
+@@ -0,0 +1,23 @@
++/* SPDX-License-Identifier: GPL-2.0-or-later */
++/*
++ * Xilinx PTP driver header file
++ *
++ * Copyright (C) 2022 Xilinx, Inc. All rights reserved.
++ */
++
++#include <linux/ptp_clock_kernel.h>
++
++struct xlnx_ptp_timer {
++	struct device		*dev;
++	void __iomem		*baseaddr;
++	struct ptp_clock	*ptp_clock;
++	struct ptp_clock_info	ptp_clock_info;
++	spinlock_t		reg_lock; /* For reg access */
++	u64			incr;
++	s64			timeoffset;
++	s32			static_delay;
++	int			irq;
++	int			extts_enable;
++	int			phc_index;
++
++};
+-- 
+2.25.1
+

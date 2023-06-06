@@ -1,0 +1,56 @@
+From 86cd5f0d85c4d201abd41c3547bdf93e9de6b0f5 Mon Sep 17 00:00:00 2001
+From: Sarath Babu Naidu Gaddam <sarath.babu.naidu.gaddam@xilinx.com>
+Date: Mon, 20 Jun 2022 23:17:06 -0600
+Subject: [LINUX PATCH 8/9] dt-bindings: net: xilinx_axienet: Add xlnx,ptp_node
+ for MRMAC
+
+phc_index property was used for reading PHC index number in mrmac
+driver.This hardcoded method has some issues when other ptp drivers
+probe first. This new property(xlnx,ptp_node) makes ethernet driver
+to acquire ptp clock indexs dynamically.
+
+Signed-off-by: Sarath Babu Naidu Gaddam <sarath.babu.naidu.gaddam@xilinx.com>
+---
+ .../devicetree/bindings/net/xilinx_axienet.txt     | 14 ++++++++++++++
+ 1 file changed, 14 insertions(+)
+
+diff --git a/Documentation/devicetree/bindings/net/xilinx_axienet.txt b/Documentation/devicetree/bindings/net/xilinx_axienet.txt
+index ed16055701d7..ba8b3a8c163e 100644
+--- a/Documentation/devicetree/bindings/net/xilinx_axienet.txt
++++ b/Documentation/devicetree/bindings/net/xilinx_axienet.txt
+@@ -94,6 +94,9 @@ Optional properties for MRMAC:
+ - xlnx,phcindex		: Indicate the index of the physical hardware clock
+ 			  to be used as per PTP clock connected to the given
+ 			  MRMAC lane. Valid range is 0 to 3.
++			  This property will be deprecated.
++- xlnx,ptp_node		: Indicate the ptp device node for ethernet driver to read
++			  ptp clock index(/dev/ptp0 etc).
+ 
+ NOTE: Time Sensitive Networking (TSN) related DT bindings are explained in [4].
+ 
+@@ -156,6 +159,16 @@ Example for MRMAC Ethernet subsystem with MCDMA:
+ 		<snip>
+ 	};
+ 
++	ptp_device: ptp_1588_timer_syncer@80000000 {
++		compatible = "xlnx,timer-syncer-1588-2.0";
++		reg = <0x0 0x80000000 0x0 0x10000>;
++		xlnx,axi4lite-freq = "150.00";
++		xlnx,core-mode = "Timer_Syncer";
++		xlnx,cs-debug-mode = <0x0>;
++		<snip>
++	};
++
++
+ 	mrmac_0: mrmac@80000000 {
+ 		axistream-connected = <&axi_mcdma_0>;
+ 		compatible = "xlnx,mrmac-ethernet-1.0";
+@@ -165,4 +178,5 @@ Example for MRMAC Ethernet subsystem with MCDMA:
+ 		xlnx,gtctrl = <&gt_ctrl>;
+ 		xlnx,gtlane = <0x0>;
+ 		xlnx,rxmem = <0x8000>;
++		xlnx,ptp_node = <&ptp_device>;
+ 	};
+-- 
+2.36.1
+

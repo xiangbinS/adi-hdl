@@ -1,0 +1,281 @@
+From f3b2f21d404a62f022945566350341a39c923f28 Mon Sep 17 00:00:00 2001
+From: Sarath Babu Naidu Gaddam <sarath.babu.naidu.gaddam@xilinx.com>
+Date: Thu, 26 Aug 2021 20:10:05 -0600
+Subject: [ LINUX PATCH 3/4] ptp: Add EXTTS support for xilinx timer
+
+This patch enables timer snapshot on external 1PPS
+
+Signed-off-by: Sarath Babu Naidu Gaddam <sarath.babu.naidu.gaddam@xilinx.com>
+---
+ drivers/ptp/ptp_xilinx.c | 129 ++++++++++++++++++++++++++++++++-------
+ 1 file changed, 108 insertions(+), 21 deletions(-)
+
+diff --git a/drivers/ptp/ptp_xilinx.c b/drivers/ptp/ptp_xilinx.c
+index 0733459a32a1..d9c7b676680b 100644
+--- a/drivers/ptp/ptp_xilinx.c
++++ b/drivers/ptp/ptp_xilinx.c
+@@ -30,8 +30,8 @@
+ #define XPTPTIMER_TOD_SEC_SYS_OFST_0_OFFSET	0x0028
+ #define XPTPTIMER_TOD_SEC_SYS_OFST_1_OFFSET	0x002C
+ #define XPTPTIMER_TOD_NS_SYS_OFST_OFFSET	0x0030
+-#define TOD_SYS_PERIOD_0                0x0130
+-#define TOD_SYS_PERIOD_1                0x0134
++#define TOD_SYS_PERIOD_0                0x0034
++#define TOD_SYS_PERIOD_1                0x0038
+ 
+ #define XPTPTIMER_SYS_SEC_0_OFFSET	0x0100
+ #define XPTPTIMER_SYS_SEC_1_OFFSET	0x0104
+@@ -64,13 +64,14 @@
+ #define XPTPTIMER_SNAPSHOT_MASK		BIT(0)
+ #define XPTPTIMER_LOAD_TOD_MASK		BIT(0)
+ #define XPTPTIMER_LOAD_OFFSET_MASK	BIT(1)
++#define ENABLE_SNAPSHOT BIT(5)
++#define INTERRUPT_MASK  0x10000
+ 
+ /* TODO This should be derived from the system design */
+ #define XPTPTIMER_CLOCK_PERIOD		4
+ #define XPTPTIMER_PERIOD_SHIFT		48
+ 
+ #define PPM_FRACTION	16
+-
+ struct xlnx_ptp_timer {
+ 	struct		device *dev;
+ 	void __iomem		*baseaddr;
+@@ -80,6 +81,9 @@ struct xlnx_ptp_timer {
+ 	u64			incr;
+ 	s64			timeoffset;
+ 	s32			static_delay;
++	int                     irq;
++	int                     extts_enable;
++
+ };
+ 
+ /* I/O accessors */
+@@ -105,10 +109,9 @@ static inline void xlnx_tod_read(struct xlnx_ptp_timer *timer,
+ 	xlnx_ptp_iow(timer, XPTPTIMER_TOD_SNAPSHOT_OFFSET,
+ 		     XPTPTIMER_SNAPSHOT_MASK);
+ 
+-	/* use TX port here */
+-	nsec = xlnx_ptp_ior(timer, XPTPTIMER_PORT_TX_NS_SNAP_OFFSET);
+-	secl = xlnx_ptp_ior(timer, XPTPTIMER_PORT_TX_SEC_0_SNAP_OFFSET);
+-	sech = xlnx_ptp_ior(timer, XPTPTIMER_PORT_TX_SEC_1_SNAP_OFFSET);
++	nsec = xlnx_ptp_ior(timer, XPTPTIMER_SYS_NS_OFFSET);
++	sech = xlnx_ptp_ior(timer, XPTPTIMER_SYS_SEC_1_OFFSET);
++	secl = xlnx_ptp_ior(timer, XPTPTIMER_SYS_SEC_0_OFFSET);
+ 
+ 	ts->tv_nsec = nsec;
+ 	ts->tv_sec = (((u64)sech << 32) | secl) & XPTPTIMER_MAX_SEC_MASK;
+@@ -183,14 +186,15 @@ static inline void xlnx_tod_period_write(struct xlnx_ptp_timer *timer, u64 adj)
+ static inline void xlnx_port_period_write(struct xlnx_ptp_timer *timer, u64 adj)
+ {
+ 	u32 adjhigh = upper_32_bits(adj);
++	unsigned long flags;
+ 
+ 	xlnx_ptp_iow(timer, XPTPTIMER_PORT_TX_PERIOD_0_OFFSET, (u32)(adj));
+ 	xlnx_ptp_iow(timer, XPTPTIMER_PORT_RX_PERIOD_0_OFFSET, (u32)(adj));
+-	spin_lock(&timer->reg_lock);
++	spin_lock_irqsave(&timer->reg_lock, flags);
+ 	xlnx_ptp_iow(timer, XPTPTIMER_PORT_TX_PERIOD_1_OFFSET, adjhigh);
+ 	xlnx_ptp_iow(timer, XPTPTIMER_PORT_RX_PERIOD_1_OFFSET, adjhigh);
+ 
+-	spin_unlock(&timer->reg_lock);
++	spin_unlock_irqrestore(&timer->reg_lock, flags);
+ }
+ 
+ /*
+@@ -220,7 +224,7 @@ static int xlnx_ptp_adjfine(struct ptp_clock_info *ptp, long scaled_ppm)
+ 	adj >>= PPM_FRACTION; /* remove fractions */
+ 	adj = neg_adj ? (timer->incr - adj) : (timer->incr + adj);
+ 
+-	xlnx_port_period_write(timer, adj);
++	xlnx_tod_period_write(timer, adj);
+ 
+ 	return 0;
+ }
+@@ -238,13 +242,12 @@ static int xlnx_ptp_adjtime(struct ptp_clock_info *ptp, s64 delta)
+ 	struct xlnx_ptp_timer *timer = container_of(ptp, struct xlnx_ptp_timer,
+ 						ptp_clock_info);
+ 	struct timespec64 offset;
++	unsigned long flags;
+ 	u64 sign = 0;
+ 	s64 cumulative_delta = timer->timeoffset;
+ 
+-	spin_lock(&timer->reg_lock);
++	spin_lock_irqsave(&timer->reg_lock, flags);
+ 
+-	/* Fixed offset between system and port timer */
+-	delta += timer->static_delay;
+ 	cumulative_delta += delta;
+ 	timer->timeoffset = cumulative_delta;
+ 	if (cumulative_delta < 0) {
+@@ -254,9 +257,9 @@ static int xlnx_ptp_adjtime(struct ptp_clock_info *ptp, s64 delta)
+ 	offset = ns_to_timespec64(cumulative_delta);
+ 	offset.tv_sec |= sign;
+ 
+-	xlnx_port_offset_write(timer, (const struct timespec64 *)&offset);
++	xlnx_tod_offset_write(timer, (const struct timespec64 *)&offset);
+ 
+-	spin_unlock(&timer->reg_lock);
++	spin_unlock_irqrestore(&timer->reg_lock, flags);
+ 
+ 	return 0;
+ }
+@@ -274,10 +277,11 @@ static int xlnx_ptp_gettime(struct ptp_clock_info *ptp, struct timespec64 *ts)
+ {
+ 	struct xlnx_ptp_timer *timer = container_of(ptp, struct xlnx_ptp_timer,
+ 						    ptp_clock_info);
++	unsigned long flags;
+ 
+-	spin_lock(&timer->reg_lock);
++	spin_lock_irqsave(&timer->reg_lock, flags);
+ 	xlnx_tod_read(timer, ts);
+-	spin_unlock(&timer->reg_lock);
++	spin_unlock_irqrestore(&timer->reg_lock, flags);
+ 
+ 	return 0;
+ }
+@@ -295,10 +299,11 @@ static int xlnx_ptp_settime(struct ptp_clock_info *ptp,
+ {
+ 	struct xlnx_ptp_timer *timer = container_of(ptp, struct xlnx_ptp_timer,
+ 					ptp_clock_info);
++	unsigned long flags;
+ 
+-	spin_lock(&timer->reg_lock);
++	spin_lock_irqsave(&timer->reg_lock, flags);
+ 	xlnx_tod_load_write(timer, ts);
+-	spin_unlock(&timer->reg_lock);
++	spin_unlock_irqrestore(&timer->reg_lock, flags);
+ 
+ 	return 0;
+ }
+@@ -306,6 +311,27 @@ static int xlnx_ptp_settime(struct ptp_clock_info *ptp,
+ static int xlnx_ptp_enable(struct ptp_clock_info *ptp,
+ 			   struct ptp_clock_request *rq, int on)
+ {
++	struct xlnx_ptp_timer *timer = container_of(ptp, struct xlnx_ptp_timer,
++							ptp_clock_info);
++	u32 data;
++
++	switch (rq->type) {
++	case PTP_CLK_REQ_EXTTS:
++		timer->extts_enable = on;
++		if (on) {
++			data = xlnx_ptp_ior(timer, XPTPTIMER_TOD_CONFIG_OFFSET);
++			data |= ENABLE_SNAPSHOT;
++			xlnx_ptp_iow(timer, XPTPTIMER_TOD_CONFIG_OFFSET, data);
++		} else {
++			data = xlnx_ptp_ior(timer, XPTPTIMER_TOD_CONFIG_OFFSET);
++			data &= ~(ENABLE_SNAPSHOT);
++			xlnx_ptp_iow(timer, XPTPTIMER_TOD_CONFIG_OFFSET, data);
++		}
++		return 0;
++	default:
++		break;
++	}
++
+ 	return -EOPNOTSUPP;
+ }
+ 
+@@ -313,7 +339,7 @@ static struct ptp_clock_info xlnx_ptp_clock_info = {
+ 	.owner		= THIS_MODULE,
+ 	.name		= "Xilinx Timer",
+ 	.max_adj	= 64000000,	/* Safe max adjutment for clock rate */
+-	.n_ext_ts	= 0,
++	.n_ext_ts	= 1,
+ 	.adjfine	= xlnx_ptp_adjfine,
+ 	.adjtime	= xlnx_ptp_adjtime,
+ 	.gettime64	= xlnx_ptp_gettime,
+@@ -321,6 +347,55 @@ static struct ptp_clock_info xlnx_ptp_clock_info = {
+ 	.enable		= xlnx_ptp_enable,
+ };
+ 
++/**
++ * xlnx_ptp_timer_isr - Interrupt Service Routine
++ * @irq:               IRQ number
++ * @priv:              pointer to the timer structure
++ */
++
++static irqreturn_t xlnx_ptp_timer_isr(int irq, void *priv)
++{
++	struct xlnx_ptp_timer *timer = priv;
++	struct ptp_clock_event event;
++	int status = 0;
++	u32 sech, secl, nsec;
++	u64 sec;
++
++	if ((status = xlnx_ptp_ior(timer, XPTPTIMER_ISR_OFFSET)) & INTERRUPT_MASK) {
++		xlnx_ptp_iow(timer, XPTPTIMER_ISR_OFFSET, INTERRUPT_MASK);
++		if (timer->ptp_clock && timer->extts_enable) {
++			event.type = PTP_CLOCK_EXTTS;
++			event.index = 0;
++			nsec = xlnx_ptp_ior(timer, XPTPTIMER_SYS_NS_OFFSET);
++			sech = xlnx_ptp_ior(timer, XPTPTIMER_SYS_SEC_1_OFFSET);
++			secl = xlnx_ptp_ior(timer, XPTPTIMER_SYS_SEC_0_OFFSET);
++
++			sec = (((u64)sech << 32) | secl) & XPTPTIMER_MAX_SEC_MASK;
++			event.timestamp = ktime_set(sec, nsec);
++			ptp_clock_event(timer->ptp_clock, &event);
++		}
++		return IRQ_HANDLED;
++	}
++
++	return IRQ_HANDLED;
++}
++
++static int xlnx_ptp_timer_request_irq(struct xlnx_ptp_timer *timer)
++{
++	int err;
++	/* Enable interrupts */
++	err = request_irq(timer->irq,
++			  xlnx_ptp_timer_isr,
++			  0/*IRQF_SHARED*/,
++			  "xlnx_ptp_timer",
++			  timer);
++	if (err) {
++		return err;
++	}
++	dev_info(timer->dev, "Acquired ptp_irq: 0x%x\n", timer->irq);
++	return 0;
++}
++
+ static int xlnx_ptp_timer_probe(struct platform_device *pdev)
+ {
+ 	struct xlnx_ptp_timer *timer;
+@@ -328,7 +403,6 @@ static int xlnx_ptp_timer_probe(struct platform_device *pdev)
+ 	int err = 0;
+ 	struct timespec64 ts, tsp;
+ 	u32 nsec, sech, secl;
+-
+ 	if (of_device_is_compatible(pdev->dev.of_node, "xlnx,timer-syncer-1588-1.0")) {
+ 		dev_err(&pdev->dev, "This Beta version is no longer supported. Please upgrade to 2.0 IP version and use xlnx,timer-syncer-1588-2.0 compatible string\n");
+ 		return -EINVAL;
+@@ -347,6 +421,13 @@ static int xlnx_ptp_timer_probe(struct platform_device *pdev)
+ 		return err;
+ 	}
+ 
++	timer->irq = irq_of_parse_and_map(pdev->dev.of_node, 0);
++	if (timer->irq <= 0) {
++		dev_err(&pdev->dev, "could not determine Timer IRQ\n");
++		err = -ENOMEM;
++		return err;
++	}
++
+ 	spin_lock_init(&timer->reg_lock);
+ 
+ 	timer->ptp_clock_info = xlnx_ptp_clock_info;
+@@ -359,6 +440,12 @@ static int xlnx_ptp_timer_probe(struct platform_device *pdev)
+ 		return err;
+ 	}
+ 
++	err = xlnx_ptp_timer_request_irq(timer);
++	if (err)
++		dev_err(&pdev->dev, "Failed to request ptp timer irq\n");
++	/* Enable timer interrupt */
++	xlnx_ptp_iow(timer, XPTPTIMER_IER_OFFSET, INTERRUPT_MASK);
++
+ 	xlnx_ptp_iow(timer, XPTPTIMER_TOD_CONFIG_OFFSET,
+ 		     XPTPTIMER_CFG_MAIN_TOD_EN | XPTPTIMER_CFG_ENABLE_PORT0);
+ 	/*
+-- 
+2.25.1
+

@@ -1,0 +1,39 @@
+/include/ "system-conf.dtsi"
+/ {
+	   axi {
+		i2c@ff030000 {
+			i2c-mux@74 {								
+				i2c@4 {
+					phc@5b {
+                                                  compatible = "idt,8a34001";
+                                                  reg = <0x5b>;
+                                          };		
+					};
+				};
+			};
+		};			
+           amba_pl@0 {
+                   ptp_1588_timer_syncer@80020000 {
+                          interrupt-parent = <0x4>;
+                          interrupts = <0x0 0x5c 0x4>;
+
+                  };
+                  ethernet@80010000 {
+                            	local-mac-address = [ff ff ff ff ff ff];
+				axistream-connected = <&Ethernet_PTP_subsystem_Ethernet_stream_subsystem_axi_dma_hier_axi_mcdma_0>;
+				interrupt-names = "mm2s_ch1_introut", "mm2s_ch2_introut", "mm2s_ch3_introut", "mm2s_ch4_introut", "mm2s_ch5_introut", "mm2s_ch6_introut", "mm2s_ch7_introut", "mm2s_ch8_introut", "mm2s_ch9_introut", "mm2s_ch10_introut", "mm2s_ch11_introut", "mm2s_ch12_introut", "mm2s_ch13_introut", "mm2s_ch14_introut", "mm2s_ch15_introut", "mm2s_ch16_introut", "s2mm_ch1_introut", "s2mm_ch2_introut", "s2mm_ch3_introut", "s2mm_ch4_introut", "s2mm_ch5_introut", "s2mm_ch6_introut", "s2mm_ch7_introut", "s2mm_ch8_introut", "s2mm_ch9_introut", "s2mm_ch10_introut", "s2mm_ch11_introut", "s2mm_ch12_introut", "s2mm_ch13_introut", "s2mm_ch14_introut", "s2mm_ch15_introut", "s2mm_ch16_introut";
+				interrupt-parent = <0x4>;
+				interrupts = <0x0 0x59 0x4 0x0 0x59 0x4 0x0 0x59 0x4 0x0 0x59 0x4 0x0 0x59 0x4 0x0 0x59 0x4 0x0 0x59 0x4 0x0 0x59 0x4 0x0 0x59 0x4 0x0 0x59 0x4 0x0 0x59 0x4 0x0 0x59 0x4 0x0 0x59 0x4 0x0 0x59 0x4 0x0 0x59 0x4 0x0 0x59 0x4 0x0 0x5a 0x4 0x0 0x5a 0x4 0x0 0x5a 0x4 0x0 0x5a 0x4 0x0 0x5a 0x4 0x0 0x5a 0x4 0x0 0x5a 0x4 0x0 0x5a 0x4 0x0 0x5a 0x4 0x0 0x5a 0x4 0x0 0x5a 0x4 0x0 0x5a 0x4 0x0 0x5a 0x4 0x0 0x5a 0x4 0x0 0x5a 0x4 0x0 0x5a 0x4>;
+				xlnx,channel-ids = "1", "2", "3", "4", "5", "6", "7", "8", "9", "a", "b", "c", "d", "e", "f", "10";
+				xlnx,include-dre;
+				xlnx,num-queues = [00 10];
+               	xlnx,ptp_node = <&Ethernet_PTP_subsystem_PTP_support_ptp_1588_timer_syncer_0>;
+				reset-gpios = <&axi_gpio_0_qpll_rst 0 0>;
+                            
+                  };
+		 axi_mcdma@80000000 {
+				compatible = "xlnx,eth-dma";
+				xlnx,addrwidth = [20];
+		  };  	   
+        };           
+};

@@ -1,0 +1,31 @@
+From 3119303c25194065cecf584647ecdfe86af6b8b7 Mon Sep 17 00:00:00 2001
+From: Sarath Babu Naidu Gaddam <sarath.babu.naidu.gaddam@amd.com>
+Date: Mon, 28 Nov 2022 16:13:24 +0530
+Subject: [LINUX PATCH 1/2] dt-bindings: net: xilinx_axienet: Add reset-gpios
+ for XXV MAC
+
+reset-gpios is an optional property and used when clock
+programming is done by manufacturer specific clock programming drivers.
+
+Signed-off-by: Sarath Babu Naidu Gaddam <sarath.babu.naidu.gaddam@amd.com>
+---
+ Documentation/devicetree/bindings/net/xilinx_axienet.txt | 3 +++
+ 1 file changed, 3 insertions(+)
+
+diff --git a/Documentation/devicetree/bindings/net/xilinx_axienet.txt b/Documentation/devicetree/bindings/net/xilinx_axienet.txt
+index ed16055701d7..91ec64a79b2a 100644
+--- a/Documentation/devicetree/bindings/net/xilinx_axienet.txt
++++ b/Documentation/devicetree/bindings/net/xilinx_axienet.txt
+@@ -95,6 +95,9 @@ Optional properties for MRMAC:
+ 			  to be used as per PTP clock connected to the given
+ 			  MRMAC lane. Valid range is 0 to 3.
+ 
++Optional properties for XXV:
++- reset-gpios		: Indicate the axi gpio node for resetting the QPLL.
++
+ NOTE: Time Sensitive Networking (TSN) related DT bindings are explained in [4].
+ 
+ [1] Documentation/devicetree/bindings/net/phy.txt
+-- 
+2.25.1
+

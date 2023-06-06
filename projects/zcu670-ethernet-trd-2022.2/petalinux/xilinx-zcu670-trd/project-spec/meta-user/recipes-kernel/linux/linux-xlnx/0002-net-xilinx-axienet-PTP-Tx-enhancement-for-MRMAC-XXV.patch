@@ -1,0 +1,167 @@
+From 5f77ce1522dac8a11fda7695384e4409ef51cbcc Mon Sep 17 00:00:00 2001
+From: Sarath Babu Naidu Gaddam <sarath.babu.naidu.gaddam@amd.com>
+Date: Mon, 26 Apr 2021 04:55:45 -0600
+Subject: [LINUX PATCH 2/3] net: xilinx: axienet: PTP Tx enhancement for MRMAC
+ & XXV
+
+This patch supports new ptp tx enhancement changes where timestamp is
+part of MM2S Descriptor. When submitting descriptor, driver provides
+additional information for ptp packets as part of USER-APP fields.
+
+When MM2S Descriptor is marked as complete then driver checks for
+operation and qualifier bit for timestamp.
+
+Signed-off-by: Sarath Babu Naidu Gaddam <sarath.babu.naidu.gaddam@amd.com>
+---
+ drivers/net/ethernet/xilinx/xilinx_axienet.h  |   6 +
+ .../net/ethernet/xilinx/xilinx_axienet_main.c | 103 ++++++++++--------
+ 2 files changed, 64 insertions(+), 45 deletions(-)
+
+diff --git a/drivers/net/ethernet/xilinx/xilinx_axienet.h b/drivers/net/ethernet/xilinx/xilinx_axienet.h
+index e2f3c27d45d7..6d01ed2ff32b 100644
+--- a/drivers/net/ethernet/xilinx/xilinx_axienet.h
++++ b/drivers/net/ethernet/xilinx/xilinx_axienet.h
+@@ -570,6 +570,7 @@
+ 
+ #define MRMAC_GT_LANE_OFFSET		BIT(16)
+ #define MRMAC_MAX_GT_LANES		4
++#define QUALIFIER_BIT			BIT(31)
+ /**
+  * struct axidma_bd - Axi Dma buffer descriptor layout
+  * @next:         MM2S/S2MM Next Descriptor Pointer
+@@ -994,6 +995,11 @@ static inline void axienet_iow(struct axienet_local *lp, off_t offset,
+ 	iowrite32(value, lp->regs + offset);
+ }
+ 
++static inline u32 axienet_check_qualifier(u32 qualifier)
++{
++	return (qualifier & QUALIFIER_BIT);
++}
++
+ /**
+  * axienet_get_mrmac_blocklock - Write to Clear MRMAC RX block lock status register
+  * and read the latest status
+diff --git a/drivers/net/ethernet/xilinx/xilinx_axienet_main.c b/drivers/net/ethernet/xilinx/xilinx_axienet_main.c
+index 8a17dbf377b1..ecfdc6c41e2c 100644
+--- a/drivers/net/ethernet/xilinx/xilinx_axienet_main.c
++++ b/drivers/net/ethernet/xilinx/xilinx_axienet_main.c
+@@ -927,8 +927,40 @@ void axienet_start_xmit_done(struct net_device *ndev,
+ #endif
+ 	while (status & XAXIDMA_BD_STS_COMPLETE_MASK) {
+ #ifdef CONFIG_XILINX_AXI_EMAC_HWTSTAMP
+-		if (cur_p->ptp_tx_skb)
+-			axienet_tx_hwtstamp(lp, cur_p);
++		if (cur_p->ptp_tx_skb) {
++			if (lp->axienet_config->mactype == XAXIENET_MRMAC ||
++				lp->axienet_config->mactype == XAXIENET_10G_25G) {
++				u32 sec = 0, nsec = 0, err = 0, val =0;
++				u64 time64;
++
++				struct skb_shared_hwtstamps *shhwtstamps =
++					skb_hwtstamps((struct sk_buff *)cur_p->ptp_tx_skb);
++
++				if (cur_p->app0 & TX_TS_OP_TWOSTEP) {
++					err = readx_poll_timeout_atomic(axienet_check_qualifier,
++									cur_p->app4, val,
++									(val & QUALIFIER), 0,
++									1000000);
++					if (err) {
++						netdev_err(lp->ndev, "Driver timedout waiting for Tx timestamp packet\n");
++					} else {
++						memcpy(&nsec, &cur_p->app2, 4);
++						memcpy(&sec, &cur_p->app3, 4);
++					}
++
++					time64 = sec * NS_PER_SEC + nsec;
++					memset(shhwtstamps, 0, sizeof(struct skb_shared_hwtstamps));
++					shhwtstamps->hwtstamp = ns_to_ktime(time64);
++
++					skb_tstamp_tx((struct sk_buff *)cur_p->ptp_tx_skb,
++						      shhwtstamps);
++					dev_kfree_skb_any((struct sk_buff *)cur_p->ptp_tx_skb);
++					cur_p->ptp_tx_skb = 0;
++				}
++			} else {
++				axienet_tx_hwtstamp(lp, cur_p);
++			}
++		}
+ #endif
+ 		if (cur_p->tx_desc_mapping == DESC_DMA_MAP_PAGE)
+ 			dma_unmap_page(ndev->dev.parent, cur_p->phys,
+@@ -1197,49 +1229,30 @@ static int axienet_skb_tstsmp(struct sk_buff **__skb, struct axienet_dma_q *q,
+ 					(unsigned long)skb_get(skb);
+ 			}
+ 		}
+-	} else if ((skb_shinfo(skb)->tx_flags & SKBTX_HW_TSTAMP) &&
+-			  (lp->axienet_config->mactype == XAXIENET_10G_25G ||
+-			   lp->axienet_config->mactype == XAXIENET_MRMAC)) {
+-		cur_p->ptp_tx_ts_tag = prandom_u32_max(XAXIFIFO_TXTS_TAG_MAX) + 1;
+-			dev_dbg(lp->dev, "tx_tag:[%04x]\n",
+-				cur_p->ptp_tx_ts_tag);
+-			if (lp->tstamp_config.tx_type == HWTSTAMP_TX_ONESTEP_SYNC ||
+-			    lp->tstamp_config.tx_type == HWTSTAMP_TX_ONESTEP_P2P) {
+-				u8 packet_flags = ptp_os(skb, lp);
+-
+-				/* Pass one step flag with packet type (sync/pdelay resp)
+-				 * to command FIFO helper only when one step TS is required.
+-				 * Pass the default two step flag for other PTP events.
+-				 */
+-				if (!packet_flags)
+-					packet_flags = TX_TS_OP_TWOSTEP;
+-				else
+-					packet_flags |= TX_TS_OP_ONESTEP;
+-
+-				if (axienet_create_tsheader(lp->tx_ptpheader,
+-							    packet_flags,
+-							    q))
+-					return NETDEV_TX_BUSY;
+-
+-				/* skb TS passing is required for non one step TS packets */
+-				if (packet_flags == TX_TS_OP_TWOSTEP) {
+-					skb_shinfo(skb)->tx_flags |= SKBTX_IN_PROGRESS;
+-					cur_p->ptp_tx_skb = (phys_addr_t)skb_get(skb);
+-				}
+-			} else {
+-				if (axienet_create_tsheader(lp->tx_ptpheader,
+-							    TX_TS_OP_TWOSTEP,
+-							    q))
+-					return NETDEV_TX_BUSY;
+-				skb_shinfo(skb)->tx_flags |= SKBTX_IN_PROGRESS;
+-				cur_p->ptp_tx_skb = (phys_addr_t)skb_get(skb);
+-			}
+-	} else if (lp->axienet_config->mactype == XAXIENET_10G_25G ||
+-		   lp->axienet_config->mactype == XAXIENET_MRMAC) {
+-		dev_dbg(lp->dev, "tx_tag:NOOP\n");
+-			if (axienet_create_tsheader(lp->tx_ptpheader,
+-						    TX_TS_OP_NOOP, q))
+-				return NETDEV_TX_BUSY;
++	} else if (lp->axienet_config->mactype == XAXIENET_MRMAC ||
++				lp->axienet_config->mactype == XAXIENET_10G_25G) {
++		if (skb_shinfo(skb)->tx_flags & SKBTX_HW_TSTAMP) {
++			u32 offset;
++			u64 ptp_ts_phy_addr = q->tx_bd_p + sizeof(*q->txq_bd_v) * q->tx_bd_tail;
++
++#ifdef CONFIG_AXIENET_HAS_MCDMA
++			offset = offsetof(struct aximcdma_bd, app2);
++#else
++			offset = offsetof(struct axidma_bd, app2);
++#endif
++			cur_p->app0 = lower_32_bits(ptp_ts_phy_addr + offset);
++			cur_p->app1 = upper_32_bits(ptp_ts_phy_addr + offset);
++			/* 1:0 flag for PTP */
++			cur_p->app0 |= TX_TS_OP_TWOSTEP;
++			cur_p->app2 = prandom_u32_max(XAXIFIFO_TXTS_TAG_MAX) + 1;
++
++			skb_shinfo(skb)->tx_flags |= SKBTX_IN_PROGRESS;
++			cur_p->ptp_tx_skb = (phys_addr_t)skb_get(skb);
++
++		} else {
++			/* No operation */
++			cur_p->app0 = TX_TS_OP_NOOP;
++		}
+ 	}
+ 
+ 	return NETDEV_TX_OK;
+-- 
+2.25.1
+

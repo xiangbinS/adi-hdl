@@ -1,0 +1,7 @@
+PETALINUX_VER=2022.2
+VALIDATE_HW_CHKSUM=1
+HDF_EXT=xsa
+HARDWARE_CHECKSUM=cd02805b4e4c59d878fdcaa477819ecf
+YOCTO_SDK=4ade5db6317c61f6cb657b7a919dfa25
+RFSCONFIG_CHKSUM=1587822598b70d419a38e07a13239811
+HARDWARE_PATH=/wrk/paeg1/users/bibin/zcu670_ptp/repo_package/vivado/zcu670_25G_PTP_subsys/project/xxv_ptp_subsys_wrapper_test_keep.xsa

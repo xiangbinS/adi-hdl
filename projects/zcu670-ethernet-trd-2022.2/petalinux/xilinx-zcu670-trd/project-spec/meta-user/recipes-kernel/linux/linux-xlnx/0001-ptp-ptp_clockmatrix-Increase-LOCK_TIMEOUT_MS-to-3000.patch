@@ -1,0 +1,30 @@
+From b55483e9568adccda1d4e03e6cf87743d3a5532b Mon Sep 17 00:00:00 2001
+From: Sarath Babu Naidu Gaddam <sarath.babu.naidu.gaddam@xilinx.com>
+Date: Thu, 26 Aug 2021 08:20:34 -0600
+Subject: [ LINUX PATCH 1/4] ptp: ptp_clockmatrix: Increase LOCK_TIMEOUT_MS to
+ 3000
+
+When updating firmware using "Serial Port Firmware Update into the RAM"
+method ,Need  extra time before starting to configure the device
+
+Signed-off-by: Sarath Babu Naidu Gaddam <sarath.babu.naidu.gaddam@xilinx.com>
+---
+ drivers/ptp/ptp_clockmatrix.h | 2 +-
+ 1 file changed, 1 insertion(+), 1 deletion(-)
+
+diff --git a/drivers/ptp/ptp_clockmatrix.h b/drivers/ptp/ptp_clockmatrix.h
+index fb323271063e..09624d93adab 100644
+--- a/drivers/ptp/ptp_clockmatrix.h
++++ b/drivers/ptp/ptp_clockmatrix.h
+@@ -50,7 +50,7 @@
+ #define TOD_WRITE_OVERHEAD_COUNT_MAX		(2)
+ #define TOD_BYTE_COUNT				(11)
+ 
+-#define LOCK_TIMEOUT_MS			(2000)
++#define LOCK_TIMEOUT_MS			(3000)
+ #define LOCK_POLL_INTERVAL_MS		(10)
+ 
+ #define PEROUT_ENABLE_OUTPUT_MASK	(0xdeadbeef)
+-- 
+2.25.1
+
