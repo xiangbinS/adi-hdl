@@ -1054,7 +1054,7 @@ proc create_hier_cell_PTP_support { parentCell nameHier } {
     CONFIG.RESYNC_CLK_PERIOD {2560} \
     CONFIG.TIMER_FORMAT {Time_of_Day} \
     CONFIG.TOD_SEC_CLK_FREQ {100.00} \
-    CONFIG.TS_CLK_PERIOD {10.0000} \
+    CONFIG.TS_CLK_PERIOD {4.0000} \
   ] $ptp_1588_timer_syncer_0
 
 #    CONFIG.ENABLE_EXT_TOD_BUS {1} \
@@ -1362,6 +1362,7 @@ proc create_hier_cell_zynq_ps { parentCell nameHier } {
   create_bd_pin -dir I -type intr In4
   create_bd_pin -dir O -type clk clk_100
   create_bd_pin -dir O -type clk clk_156_25
+  create_bd_pin -dir O -type clk clk_250
   create_bd_pin -dir O -from 0 -to 0 -type rst peripheral_reset
   create_bd_pin -dir O -from 0 -to 0 -type rst perph_aresetn_156_25
 
@@ -1902,7 +1903,7 @@ SPI Flash#Quad SPI Flash#GPIO0 MIO#I2C 0#I2C 0#I2C 1#I2C 1#UART 0#UART 0#GPIO0 M
     CONFIG.PSU__CRL_APB__PL1_REF_CTRL__ACT_FREQMHZ {99.999001} \
     CONFIG.PSU__CRL_APB__PL1_REF_CTRL__FREQMHZ {100} \
     CONFIG.PSU__CRL_APB__PL1_REF_CTRL__SRCSEL {RPLL} \
-    CONFIG.PSU__CRL_APB__PL2_REF_CTRL__ACT_FREQMHZ {100} \
+    CONFIG.PSU__CRL_APB__PL2_REF_CTRL__FREQMHZ {250} \
     CONFIG.PSU__CRL_APB__PL3_REF_CTRL__ACT_FREQMHZ {100} \
     CONFIG.PSU__CRL_APB__QSPI_REF_CTRL__ACT_FREQMHZ {124.998749} \
     CONFIG.PSU__CRL_APB__QSPI_REF_CTRL__FREQMHZ {125} \
@@ -2041,7 +2042,7 @@ SPI Flash#Quad SPI Flash#GPIO0 MIO#I2C 0#I2C 0#I2C 1#I2C 1#UART 0#UART 0#GPIO0 M
     CONFIG.PSU__FPD_SLCR__WDT1__ACT_FREQMHZ {99.999001} \
     CONFIG.PSU__FPGA_PL0_ENABLE {1} \
     CONFIG.PSU__FPGA_PL1_ENABLE {1} \
-    CONFIG.PSU__FPGA_PL2_ENABLE {0} \
+    CONFIG.PSU__FPGA_PL2_ENABLE {1} \
     CONFIG.PSU__FPGA_PL3_ENABLE {0} \
     CONFIG.PSU__FP__POWER__ON {1} \
     CONFIG.PSU__FTM__CTI_IN_0 {0} \
@@ -2216,6 +2217,7 @@ SPI Flash#Quad SPI Flash#GPIO0 MIO#I2C 0#I2C 0#I2C 1#I2C 1#UART 0#UART 0#GPIO0 M
     CONFIG.PSU__PJTAG__PERIPHERAL__ENABLE {0} \
     CONFIG.PSU__PL_CLK0_BUF {TRUE} \
     CONFIG.PSU__PL_CLK1_BUF {TRUE} \
+    CONFIG.PSU__PL_CLK2_BUF {TRUE} \
     CONFIG.PSU__PL__POWER__ON {1} \
     CONFIG.PSU__PMU_COHERENCY {0} \
     CONFIG.PSU__PMU__AIBACK__ENABLE {0} \
@@ -2285,30 +2287,32 @@ Port;FD4A0000;FD4AFFFF;0|FPD;DPDMA;FD4C0000;FD4CFFFF;0|FPD;DDR_XMPU5_CFG;FD05000
     CONFIG.PSU__RPU__POWER__ON {1} \
     CONFIG.PSU__SATA__PERIPHERAL__ENABLE {0} \
     CONFIG.PSU__SAXIGP0__DATA_WIDTH {128} \
-    CONFIG.PSU__SD0__CLK_100_SDR_OTAP_DLY {0x3} \
-    CONFIG.PSU__SD0__CLK_200_SDR_OTAP_DLY {0x3} \
-    CONFIG.PSU__SD0__CLK_50_DDR_ITAP_DLY {0x3D} \
-    CONFIG.PSU__SD0__CLK_50_DDR_OTAP_DLY {0x4} \
-    CONFIG.PSU__SD0__CLK_50_SDR_ITAP_DLY {0x15} \
-    CONFIG.PSU__SD0__CLK_50_SDR_OTAP_DLY {0x5} \
+    CONFIG.PSU__SD0_COHERENCY {0} \
+    CONFIG.PSU__SD0_ROUTE_THROUGH_FPD {0} \
+    CONFIG.PSU__SD0__GRP_CD__ENABLE {0} \
+    CONFIG.PSU__SD0__GRP_POW__ENABLE {0} \
+    CONFIG.PSU__SD0__GRP_WP__ENABLE {0} \
     CONFIG.PSU__SD0__PERIPHERAL__ENABLE {0} \
     CONFIG.PSU__SD0__RESET__ENABLE {0} \
     CONFIG.PSU__SD1_COHERENCY {0} \
     CONFIG.PSU__SD1_ROUTE_THROUGH_FPD {0} \
     CONFIG.PSU__SD1__CLK_100_SDR_OTAP_DLY {0x3} \
     CONFIG.PSU__SD1__CLK_200_SDR_OTAP_DLY {0x3} \
-    CONFIG.PSU__SD1__CLK_50_DDR_ITAP_DLY {0x33} \
+    CONFIG.PSU__SD1__CLK_50_DDR_ITAP_DLY {0x3D} \
     CONFIG.PSU__SD1__CLK_50_DDR_OTAP_DLY {0x4} \
-    CONFIG.PSU__SD1__CLK_50_SDR_ITAP_DLY {0x28} \
+    CONFIG.PSU__SD1__CLK_50_SDR_ITAP_DLY {0x15} \
     CONFIG.PSU__SD1__CLK_50_SDR_OTAP_DLY {0x5} \
     CONFIG.PSU__SD1__DATA_TRANSFER_MODE {8Bit} \
     CONFIG.PSU__SD1__GRP_CD__ENABLE {1} \
     CONFIG.PSU__SD1__GRP_CD__IO {MIO 45} \
-    CONFIG.PSU__SD1__GRP_POW__ENABLE {0} \
-    CONFIG.PSU__SD1__GRP_WP__ENABLE {0} \
+    CONFIG.PSU__SD1__GRP_POW__ENABLE {1} \
+    CONFIG.PSU__SD1__GRP_POW__IO {MIO 43} \
+    CONFIG.PSU__SD1__GRP_WP__ENABLE {1} \
+    CONFIG.PSU__SD1__GRP_WP__IO {MIO 44} \
     CONFIG.PSU__SD1__PERIPHERAL__ENABLE {1} \
-    CONFIG.PSU__SD1__PERIPHERAL__IO {MIO 39 46 .. 51} \
-    CONFIG.PSU__SD1__SLOT_TYPE {SD 3.0 AUTODIR} \
+    CONFIG.PSU__SD1__PERIPHERAL__IO {MIO 39 .. 51} \
+    CONFIG.PSU__SD1__RESET__ENABLE {0} \
+    CONFIG.PSU__SD1__SLOT_TYPE {SD 3.0} \
     CONFIG.PSU__SPI0_LOOP_SPI1__ENABLE {0} \
     CONFIG.PSU__SPI0__PERIPHERAL__ENABLE {0} \
     CONFIG.PSU__SPI1__PERIPHERAL__ENABLE {0} \
@@ -2457,6 +2461,7 @@ Port;FD4A0000;FD4AFFFF;0|FPD;DPDMA;FD4C0000;FD4CFFFF;0|FPD;DDR_XMPU5_CFG;FD05000
   connect_bd_net -net ps_irq_concat_dout [get_bd_pins ps_irq_concat/dout] [get_bd_pins zynq_ultra_ps_e_0/pl_ps_irq0]
   connect_bd_net -net ps_rst_100_peripheral_reset [get_bd_pins peripheral_reset] [get_bd_pins ps_rst_100/peripheral_reset]
   connect_bd_net -net zusp_ps_pl_clk1 [get_bd_pins clk_100] [get_bd_pins ps_rst_100/slowest_sync_clk] [get_bd_pins zynq_ultra_ps_e_0/pl_clk1]
+  connect_bd_net -net zusp_ps_pl_clk2 [get_bd_pins clk_250] [get_bd_pins zynq_ultra_ps_e_0/pl_clk2]
   connect_bd_net -net zusp_ps_pl_resetn0 [get_bd_pins ps_rst_100/ext_reset_in] [get_bd_pins ps_rst_156_25/ext_reset_in] [get_bd_pins zynq_ultra_ps_e_0/pl_resetn0]
 
   # Restore current instance
@@ -2836,7 +2841,8 @@ proc create_root_design { parentCell } {
   connect_bd_net -net xxv_ethernet_0_stat_rx_status_0 [get_bd_pins Ethernet_PTP_subsystem/stat_rx_status_0] [get_bd_pins vio_0/probe_in9]
   connect_bd_net -net xxv_ethernet_0_stat_tx_bad_fcs_0 [get_bd_pins Ethernet_PTP_subsystem/stat_tx_bad_fcs_0] [get_bd_pins vio_0/probe_in13]
   connect_bd_net -net xxv_ethernet_0_stat_tx_local_fault_0 [get_bd_pins Ethernet_PTP_subsystem/stat_tx_local_fault_0] [get_bd_pins vio_0/probe_in12]
-  connect_bd_net -net zynq_ps_clk_100 [get_bd_pins Ethernet_PTP_subsystem/dclk] [get_bd_pins Ethernet_PTP_subsystem/ts_clk] [get_bd_pins zynq_ps/clk_100]
+  connect_bd_net -net zynq_ps_clk_100 [get_bd_pins Ethernet_PTP_subsystem/dclk] [get_bd_pins zynq_ps/clk_100]
+  connect_bd_net -net zynq_ps_clk_250 [get_bd_pins zynq_ps/clk_250] [get_bd_pins Ethernet_PTP_subsystem/ts_clk]
   connect_bd_net -net zynq_ps_peripheral_reset [get_bd_pins Ethernet_PTP_subsystem/sys_reset] [get_bd_pins vio_0/probe_in2] [get_bd_pins zynq_ps/peripheral_reset]
 
   # Create address segments
