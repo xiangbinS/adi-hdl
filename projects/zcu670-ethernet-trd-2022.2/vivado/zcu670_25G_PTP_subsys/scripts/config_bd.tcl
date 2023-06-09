@@ -1364,6 +1364,7 @@ proc create_hier_cell_zynq_ps { parentCell nameHier } {
   create_bd_pin -dir O -type clk clk_156_25
   create_bd_pin -dir O -type clk clk_250
   create_bd_pin -dir O -from 0 -to 0 -type rst peripheral_reset
+  create_bd_pin -dir O -from 0 -to 0 -type rst peripheral_reset_250
   create_bd_pin -dir O -from 0 -to 0 -type rst perph_aresetn_156_25
 
   # Create instance: axi_interconnect_0, and set properties
@@ -1392,6 +1393,9 @@ proc create_hier_cell_zynq_ps { parentCell nameHier } {
 
   # Create instance: ps_rst_156_25, and set properties
   set ps_rst_156_25 [ create_bd_cell -type ip -vlnv xilinx.com:ip:proc_sys_reset ps_rst_156_25 ]
+
+  # Create instance: ps_rst_250, and set properties
+  set ps_rst_250 [ create_bd_cell -type ip -vlnv xilinx.com:ip:proc_sys_reset ps_rst_250 ]
 
   # Create instance: zynq_ultra_ps_e_0, and set properties
   set zynq_ultra_ps_e_0 [ create_bd_cell -type ip -vlnv xilinx.com:ip:zynq_ultra_ps_e zynq_ultra_ps_e_0 ]
@@ -2460,9 +2464,11 @@ Port;FD4A0000;FD4AFFFF;0|FPD;DPDMA;FD4C0000;FD4CFFFF;0|FPD;DDR_XMPU5_CFG;FD05000
   connect_bd_net -net proc_sys_reset_0_interconnect_aresetn [get_bd_pins ARESETN] [get_bd_pins axi_interconnect_0/S01_ARESETN] [get_bd_pins axi_interconnect_0/S02_ARESETN] [get_bd_pins axi_interconnect_0/S03_ARESETN]
   connect_bd_net -net ps_irq_concat_dout [get_bd_pins ps_irq_concat/dout] [get_bd_pins zynq_ultra_ps_e_0/pl_ps_irq0]
   connect_bd_net -net ps_rst_100_peripheral_reset [get_bd_pins peripheral_reset] [get_bd_pins ps_rst_100/peripheral_reset]
+  connect_bd_net -net ps_rst_250_peripheral_reset [get_bd_pins peripheral_reset_250] [get_bd_pins ps_rst_250/peripheral_reset]
   connect_bd_net -net zusp_ps_pl_clk1 [get_bd_pins clk_100] [get_bd_pins ps_rst_100/slowest_sync_clk] [get_bd_pins zynq_ultra_ps_e_0/pl_clk1]
-  connect_bd_net -net zusp_ps_pl_clk2 [get_bd_pins clk_250] [get_bd_pins zynq_ultra_ps_e_0/pl_clk2]
-  connect_bd_net -net zusp_ps_pl_resetn0 [get_bd_pins ps_rst_100/ext_reset_in] [get_bd_pins ps_rst_156_25/ext_reset_in] [get_bd_pins zynq_ultra_ps_e_0/pl_resetn0]
+  connect_bd_net -net zusp_ps_pl_clk2 [get_bd_pins clk_250] [get_bd_pins ps_rst_250/slowest_sync_clk] [get_bd_pins zynq_ultra_ps_e_0/pl_clk2]
+  connect_bd_net -net zusp_ps_pl_resetn0 [get_bd_pins ps_rst_100/ext_reset_in] [get_bd_pins ps_rst_156_25/ext_reset_in] [get_bd_pins ps_rst_250/ext_reset_in] [get_bd_pins zynq_ultra_ps_e_0/pl_resetn0]
+#  connect_bd_net -net zusp_ps_pl_resetn1 [get_bd_pins ps_rst_250/ext_reset_in] [get_bd_pins ps_rst_250/ext_reset_in] [get_bd_pins zynq_ultra_ps_e_0/pl_resetn0]
 
   # Restore current instance
   current_bd_instance $oldCurInst
@@ -2637,6 +2643,7 @@ proc create_hier_cell_Ethernet_PTP_subsystem { parentCell nameHier } {
   create_bd_pin -dir O stat_tx_bad_fcs_0
   create_bd_pin -dir O stat_tx_local_fault_0
   create_bd_pin -dir I -type rst sys_reset
+  create_bd_pin -dir I -type rst ts_rst
   create_bd_pin -dir I tod_1pps_in_0
   create_bd_pin -dir O tod_intr
   create_bd_pin -dir I -type clk ts_clk
@@ -2693,7 +2700,8 @@ proc create_hier_cell_Ethernet_PTP_subsystem { parentCell nameHier } {
   connect_bd_net -net xxv_ethernet_0_stat_tx_local_fault_0 [get_bd_pins stat_tx_local_fault_0] [get_bd_pins Ethernet_stream_subsystem/stat_tx_local_fault]
   connect_bd_net -net xxv_ethernet_0_tx_period_ns_0 [get_bd_pins Ethernet_stream_subsystem/tx_period_ns] [get_bd_pins PTP_support/core_tx0_period_0]
   connect_bd_net -net zynq_ps_clk_100 [get_bd_pins dclk] [get_bd_pins Ethernet_stream_subsystem/dclk]
-  connect_bd_net -net zynq_ps_peripheral_reset [get_bd_pins sys_reset] [get_bd_pins Ethernet_stream_subsystem/sys_reset] [get_bd_pins PTP_support/ts_rst]
+  connect_bd_net -net zynq_ps_peripheral_reset [get_bd_pins sys_reset] [get_bd_pins Ethernet_stream_subsystem/sys_reset]
+  connect_bd_net -net zynq_ps_peripheral_ts_rst [get_bd_pins ts_rst] [get_bd_pins PTP_support/ts_rst]
 
   # Restore current instance
   current_bd_instance $oldCurInst
@@ -2844,6 +2852,7 @@ proc create_root_design { parentCell } {
   connect_bd_net -net zynq_ps_clk_100 [get_bd_pins Ethernet_PTP_subsystem/dclk] [get_bd_pins zynq_ps/clk_100]
   connect_bd_net -net zynq_ps_clk_250 [get_bd_pins zynq_ps/clk_250] [get_bd_pins Ethernet_PTP_subsystem/ts_clk]
   connect_bd_net -net zynq_ps_peripheral_reset [get_bd_pins Ethernet_PTP_subsystem/sys_reset] [get_bd_pins vio_0/probe_in2] [get_bd_pins zynq_ps/peripheral_reset]
+  connect_bd_net -net zynq_ps_peripheral_ts_rst [get_bd_pins Ethernet_PTP_subsystem/ts_rst] [get_bd_pins zynq_ps/peripheral_reset_250]
 
   # Create address segments
   assign_bd_address -offset 0xA0000000 -range 0x00002000 -target_address_space [get_bd_addr_spaces zynq_ps/zynq_ultra_ps_e_0/Data] [get_bd_addr_segs zynq_ps/bram/axi_bram_ctrl_0/S_AXI/Mem0] -force
