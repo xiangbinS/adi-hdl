@@ -3,8 +3,8 @@
 
 set_property -dict {PACKAGE_PIN AK38} [get_ports rx_ref_clk_p]                                              ; ## D4   FMC_GBT0_0_P         MGTREFCLK0P_121
 set_property -dict {PACKAGE_PIN AK39} [get_ports rx_ref_clk_n]                                              ; ## D5   FMC_GBT0_0_N         MGTREFCLK0N_121
-set_property -dict {PACKAGE_PIN AB38} [get_ports rx_ref_clk_replica_p]                                      ; ## L8   FMC_GBTCLK3_M2C_C_P  MGTREFCLK0P_125
-set_property -dict {PACKAGE_PIN AB39} [get_ports rx_ref_clk_replica_n]                                      ; ## L9   FMC_GBTCLK3_M2C_C_N  MGTREFCLK0N_125
+set_property -dict {PACKAGE_PIN V38} [get_ports rx_ref_clk_replica_p]                                       ; ## D4   FMC_GBT0_1_P         MGTREFCLK0N_126
+set_property -dict {PACKAGE_PIN V39} [get_ports rx_ref_clk_replica_n]                                       ; ## D5   FMC_GBT0_1_P         MGTREFCLK0N_126
 
 set_property -dict {PACKAGE_PIN AF38} [get_ports glbl_clk_0_p]                                              ; ## L12  FMC_GBTCLK2_M2C_C_P  MGTREFCLK0P_122
 set_property -dict {PACKAGE_PIN AF39} [get_ports glbl_clk_0_n]                                              ; ## L13  FMC_GBTCLK2_M2C_C_P  MGTREFCLK0N_122
@@ -65,10 +65,6 @@ set_property -dict {PACKAGE_PIN AG32 IOSTANDARD LVCMOS18} [get_ports hmc7044_sdi
 set_property -dict {PACKAGE_PIN AJ36 IOSTANDARD LVCMOS18} [get_ports hmc_sync_req]                          ; ## D18  FMC_LA13_N           IO_L20N_T3L_N3_AD1N_43
 
 set_property -dict {PACKAGE_PIN N33  IOSTANDARD LVCMOS18} [get_ports adf4371_csb]                           ; ## H22  FMC_LA19_P           IO_L22P_T3U_N6_DBC_AD0P_45
-set_property -dict {PACKAGE_PIN AG34 IOSTANDARD LVCMOS18} [get_ports adf4371_sclk]                          ; ## G18  FMC_LA16_P           IO_L22P_T3U_N6_DBC_AD0P_43
-set_property -dict {PACKAGE_PIN AH35 IOSTANDARD LVCMOS18} [get_ports adf4371_sdio]                          ; ## G19  FMC_LA16_N           IO_L22N_T3U_N7_DBC_AD0N_43
-
-#set_property -dict {PACKAGE_PIN AG33 IOSTANDARD LVCMOS18} [get_ports ltc6952_sdo]                           ; ## H20  FMC_LA15_N           IO_L24N_T3U_N11_43
 
 # Primary clock definitions
 
@@ -86,4 +82,3 @@ create_clock -name global_clk_0   -period  3.2 [get_ports glbl_clk_0_p]
 set_input_delay -clock [get_clocks global_clk_0] \
   [expr [get_property PERIOD [get_clocks global_clk_0]] / 2] \
   [get_ports {rx_sysref_*}]
-
