@@ -17,6 +17,9 @@ set cnv_ref_clk 100
 # NOTE: this is a default value, software may or may not change this
 set adc_sampling_rate 1000000
 
+# specify the MAX17687 and LT8608 SYNC signal frequency (400KHz)
+set max17687_sync_freq 400000
+
 #create_bd_intf_port -mode Master -vlnv analog.com:interface:spi_master_rtl:1.0 adaq4224_spi
 
 create_bd_port -dir O adaq4224_spi_sclk
@@ -29,6 +32,8 @@ create_bd_port -dir I adaq4224_echo_sclk
 create_bd_port -dir I adaq4224_busy
 create_bd_port -dir O adaq4224_cnv
 create_bd_port -dir I adaq4224_ext_clk
+
+create_bd_port -dir O max17687_sync_clk
 
 create_bd_intf_port -mode Master -vlnv xilinx.com:interface:iic_rtl:1.0 iic_temp
 
@@ -68,13 +73,18 @@ ad_ip_parameter $hier_spi_engine/${hier_spi_engine}_axi_regmap CONFIG.CFG_INFO_3
 ## CNV generator; the actual sample rate will be PULSE_PERIOD * (1/cnv_ref_clk)
 set sampling_cycle [expr int(ceil(double($cnv_ref_clk * 1000000) / $adc_sampling_rate))]
 
+## setup the pulse period for the MAX17687 and LT8608 SYNC signal
+set max17687_cycle [expr int(ceil(double($cnv_ref_clk * 1000000) / $max17687_sync_freq))]
+
 ad_ip_instance axi_pwm_gen cnv_generator
-ad_ip_parameter cnv_generator CONFIG.N_PWMS 2
+ad_ip_parameter cnv_generator CONFIG.N_PWMS 3
 ad_ip_parameter cnv_generator CONFIG.PULSE_0_PERIOD $sampling_cycle
 ad_ip_parameter cnv_generator CONFIG.PULSE_0_WIDTH 1
 ad_ip_parameter cnv_generator CONFIG.PULSE_1_PERIOD $sampling_cycle
 ad_ip_parameter cnv_generator CONFIG.PULSE_1_WIDTH 1
 ad_ip_parameter cnv_generator CONFIG.PULSE_1_OFFSET 1
+ad_ip_parameter cnv_generator CONFIG.PULSE_2_PERIOD $max17687_cycle
+ad_ip_parameter cnv_generator CONFIG.PULSE_2_WIDTH [expr int(ceil(double($max17687_cycle) / 2))]
 
 ad_ip_instance spi_axis_reorder data_reorder
 ad_ip_parameter data_reorder CONFIG.NUM_OF_LANES $NUM_OF_SDI
@@ -169,6 +179,7 @@ if {$CAPTURE_ZONE == 1} {
 
 }
 ad_connect adaq4224_cnv cnv_generator/pwm_1
+ad_connect max17687_sync_clk cnv_generator/pwm_2
 
 # clocks
 

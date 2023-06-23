@@ -9,7 +9,7 @@ H08   LA02_N      SDO1_FMC    adaq4224_spi_sdi[1] LVCMOS25      #N/A
 G09   LA03_P      SDO2_FMC    adaq4224_spi_sdi[2] LVCMOS25      #N/A
 G10   LA03_N      SDO3_FMC    adaq4224_spi_sdi[3] LVCMOS25      #N/A
 
-D20   LA17_P_CC   SCK_OUT_FMC adaq4224_echo_sclk  LVCMOS25      #N/A
+D20   LA17_CC_p   SCK_OUT_FMC adaq4224_echo_sclk  LVCMOS25      #N/A
 D09   LA01_CC_N   RESET_FMC   adaq4224_resetn     LVCMOS25      #N/A
 D08   LA01_CC_P   CNV_FMC     adaq4224_cnv        LVCMOS25      #N/A
 C22   LA18_CC_P   BUSY_FMC    adaq4224_busy       LVCMOS25      #N/A
@@ -19,6 +19,7 @@ H10   LA04_P      A0_FMC      adaq4224_pgia_gain_ctrl[0]  LVCMOS25      #N/A
 H11   LA04_N      A1_FMC      adaq4224_pgia_gain_ctrl[1]  LVCMOS25      #N/A
 H13   LA07_P      RST         max17687_rst                LVCMOS25      #N/A
 H14   LA07_N      EN          max17687_en                 LVCMOS25      #N/A
+B20   LA17_CC_N   SYNCFMC     max17687_sync_clk           LVCMOS25      #N/A
 
 D11   LA05_P      TSCL        iic_tscl            LVCMOS25      #N/A
-D12   LA05_N_     TSDA        iic_tsda            LVCMOS25      #N/A
+D12   LA05_N      TSDA        iic_tsda            LVCMOS25      #N/A

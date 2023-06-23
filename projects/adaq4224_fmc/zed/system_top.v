@@ -99,8 +99,10 @@ module system_top #(
   inout           iic_tscl,
   inout           iic_tsda,
   inout   [ 1:0]  adaq4224_pgia_gain_ctrl,
+  
   inout           max17687_rst,
-  inout           max17687_en
+  inout           max17687_en,
+  output          max17687_sync_clk
 );
 
   // internal signals
@@ -247,6 +249,7 @@ module system_top #(
     .adaq4224_busy (adaq4224_busy),
     .adaq4224_cnv (adaq4224_cnv),
     .adaq4224_ext_clk (ext_clk_s),
+    .max17687_sync_clk (max17687_sync_clk),
     .otg_vbusoc (otg_vbusoc),
     .spdif (spdif));
 
